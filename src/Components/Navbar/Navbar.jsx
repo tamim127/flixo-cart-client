@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/Context/AuthContext";
-import UserDropdown from "../UserDropdown/UserDropdown";
+import UserDropdown from "../UseDropDown/UserDropdown";
 
 export default function Navbar() {
   const { currentUser } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <nav className="fixed w-full bg-white shadow-md z-50">
+    <nav className=" max-w-7xl mx-auto mt-5 w-full bg-white shadow-md z-50">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
         {/* Logo */}
         <Link href="/" className="text-2xl font-bold text-blue-600">

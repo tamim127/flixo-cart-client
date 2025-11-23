@@ -1,11 +1,11 @@
-import React from 'react';
+// src/app/dashboard/add-product/page.jsx
+"use client";
 
-const page = () => {
-    return (
-        <div>
-            <h1>add products</h1>
-        </div>
-    );
+import ProductForm from "@/Components/ProductForm/ProductForm";
+
+
+const AddProductPage = () => {
+  return <ProductForm productId={null} />; // Creates a new product
 };
 
-export default page;
+export default AddProductPage;
