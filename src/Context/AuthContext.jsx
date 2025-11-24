@@ -1,6 +1,5 @@
+// src/context/AuthContext.jsx
 "use client";
-
-import { createContext, useContext, useEffect, useState } from "react";
 
 import {
   onAuthStateChanged,
@@ -12,39 +11,49 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase.config";
+import { createContext, useContext, useEffect, useState } from "react";
 
-const AuthContext = createContext();
+const AuthContext = createContext({});
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within AuthProvider");
+  }
+  return context;
+};
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Listen to auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       setLoading(false);
     });
 
-    return unsubscribe;
+    return () => unsubscribe(); // cleanup
   }, []);
 
-  // Email/Password Login
-  const login = (email, password) =>
-    signInWithEmailAndPassword(auth, email, password);
+  // Auth Methods
+  const login = (email, password) => {
+    return signInWithEmailAndPassword(auth, email, password);
+  };
 
-  // Email/Password Register
-  const register = (email, password) =>
-    createUserWithEmailAndPassword(auth, email, password);
+  const register = (email, password) => {
+    return createUserWithEmailAndPassword(auth, email, password);
+  };
 
-  // Forgot Password
-  const resetPassword = (email) => sendPasswordResetEmail(auth, email);
+  const resetPassword = (email) => {
+    return sendPasswordResetEmail(auth, email);
+  };
 
-  // Logout
-  const logout = () => signOut(auth);
+  const logout = () => {
+    return signOut(auth);
+  };
 
-  // Google Login
-  const googleLogin = async () => {
+  const googleLogin = () => {
     const provider = new GoogleAuthProvider();
     return signInWithPopup(auth, provider);
   };
@@ -61,10 +70,8 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {/* লোডিং এর সময় কিছুই দেখাবে না (Next.js এর জন্য best practice) */}
+      {loading ? null : children}
     </AuthContext.Provider>
   );
 }
-
-// Custom hook to use auth context
-export const useAuth = () => useContext(AuthContext);

@@ -1,135 +1,131 @@
 // src/lib/api.js
-const API_BASE_URL = "http://localhost:5000";
 
-// --- Utility Functions ---
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;// অথবা https://dummyjson.com/products
 
-/**
- * Helper to calculate original price from current price and discount percentage.
- * @param {number} price 
- * @param {number} discountPercentage 
- * @returns {number} Calculated original price.
- */
+// Utility: Calculate original price
 function calculateOriginalPrice(price, discountPercentage) {
     if (discountPercentage > 0 && price > 0) {
-        // Formula: Original Price = Current Price / (1 - Discount Percentage / 100)
-        let originalPrice = price / (1 - discountPercentage / 100);
-        return Math.round(originalPrice * 100) / 100; // Round to 2 decimal places
+        return Math.round((price / (1 - discountPercentage / 100)) * 100) / 100;
     }
     return price;
 }
 
-/**
- * Maps the raw product data from the backend to the structure expected by the frontend UI.
- * @param {Object} product 
- * @returns {Object} Processed product object.
- */
+// Process product + extract createdAt from meta
 function processProduct(product) {
-    // If the product object is not valid, return it as is
-    if (!product || typeof product.price !== 'number') return product;
+    if (!product) return product;
 
-    // Calculate originalPrice and map thumbnail to imageUrl
-    const processedProduct = {
+    return {
         ...product,
-        originalPrice: calculateOriginalPrice(product.price, product.discountPercentage),
-        imageUrl: product.thumbnail || product.images?.[0] || 'https://via.placeholder.com/300?text=No+Image',
-        // Ensure price is a number for safety
-        price: product.price,
+        originalPrice: calculateOriginalPrice(product.price, product.discountPercentage || 0),
+        imageUrl: product.thumbnail || product.images?.[0] || "https://via.placeholder.com/300?text=No+Image",
+        createdAt: product.meta?.createdAt || product.createdAt || new Date().toISOString(),
     };
-    return processedProduct;
 }
 
-
-// --- CRUD API Functions ---
-
-/**
- * C: Create a new product. (POST /products)
- */
-export async function createProduct(productData) {
-    const res = await fetch(`${API_BASE_URL}/products`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(productData),
-    });
-
-    if (!res.ok) {
-        throw new Error(`Failed to create product. Status: ${res.status}`);
-    }
-    return res.json();
-}
-
-/**
- * R: Fetch all products. (GET /products)
- */
+// 1. Homepage - 24 products
 export async function getProducts(options = {}) {
-    // এখন limit এবং skip default values ব্যবহার করবে যদি options-এ না থাকে।
     const limit = options.limit || 24;
     const skip = options.skip || 0;
 
     const res = await fetch(`${API_BASE_URL}/products?limit=${limit}&skip=${skip}`, {
-        cache: 'no-store',
+        cache: "no-store",
     });
 
-    if (!res.ok) {
-        throw new Error(`Failed to fetch products. Status: ${res.status}`);
-    }
+    if (!res.ok) throw new Error("Failed to fetch products");
 
     const data = await res.json();
+    const processed = data.products.map(processProduct);
 
-    // প্রোডাক্টগুলো process করা হলো
-    const processedProducts = data.products.map(processProduct);
+    // Optional: Oldest first on homepage too (চাইলে এটাও চেঞ্জ করতে পারো)
+    processed.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
     return {
-        products: processedProducts,
+        products: processed,
         total: data.total,
-        limit: data.limit,
-        skip: data.skip
+        limit: data.limit || limit,
+        skip: data.skip || skip,
     };
 }
 
-/**
- * R: Fetch a single product by ID. (GET /products/:id)
- */
-export async function getProductById(id) {
-    const res = await fetch(`${API_BASE_URL}/products/${id}`, { cache: "no-store" });
+// 2. Admin Dashboard - ALL products + OLDEST FIRST (তুমি যা চেয়েছিলে!)
+export async function getAllProductsForAdmin() {
+    const res = await fetch(`${API_BASE_URL}/products?limit=9999`, {
+        cache: "no-store",
+    });
 
-    if (!res.ok) {
-        throw new Error(res.status === 404 ? "Product Not Found" : "Server Error");
-    }
+    if (!res.ok) throw new Error("Failed to fetch all products for admin");
 
     const data = await res.json();
-    return processProduct(data);
+    let products = data.products || data || [];
+
+    // পুরানো প্রোডাক্ট সবার উপরে (Oldest First)
+    products.sort((a, b) => {
+        const dateA = new Date(a.meta?.createdAt || a.createdAt || 0).getTime();
+        const dateB = new Date(b.meta?.createdAt || b.createdAt || 0).getTime();
+        return dateA - dateB; // এটাই ম্যাজিক! পুরানো = উপরে
+    });
+
+    return products.map(processProduct);
 }
 
-/**
- * U: Update an existing product. (PUT /products/:id)
- */
+// Single product
+export async function getProductById(id) {
+    const res = await fetch(`${API_BASE_URL}/products/${id}`, { cache: "no-store" });
+    if (!res.ok) throw new Error("Product not found");
+    return processProduct(await res.json());
+}
+
+// CRUD Operations
+export async function createProduct(productData) {
+    const res = await fetch(`${API_BASE_URL}/products`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(productData),
+    });
+    if (!res.ok) throw new Error("Failed to create product");
+    return res.json();
+}
+
 export async function updateProduct(id, updatedData) {
     const res = await fetch(`${API_BASE_URL}/products/${id}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedData),
     });
-
-    if (!res.ok) {
-        throw new Error(`Failed to update product ${id}. Status: ${res.status}`);
-    }
+    if (!res.ok) throw new Error("Failed to update product");
     return res.json();
 }
 
-/**
- * D: Delete a product. (DELETE /products/:id)
- */
 export async function deleteProduct(id) {
-    const res = await fetch(`${API_BASE_URL}/products/${id}`, {
-        method: 'DELETE',
-    });
-
-    if (!res.ok) {
-        throw new Error(`Failed to delete product ${id}. Status: ${res.status}`);
-    }
+    const res = await fetch(`${API_BASE_URL}/products/${id}`, { method: "DELETE" });
+    if (!res.ok) throw new Error("Failed to delete product");
     return res.json();
+}
+
+// Extra
+export async function getCategories() {
+    const res = await fetch(`${API_BASE_URL}/categories`, { cache: "no-store" });
+    if (!res.ok) throw new Error("Failed to fetch categories");
+    return res.json();
+}
+
+export async function getProductsByCategory(category, options = {}) {
+    const limit = options.limit || 24;
+    const res = await fetch(`${API_BASE_URL}/products/category/${category}?limit=${limit}`, {
+        cache: "no-store",
+    });
+    if (!res.ok) throw new Error("Failed to load category products");
+    const data = await res.json();
+    const processed = data.products.map(processProduct);
+    processed.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)); // Oldest first
+    return { products: processed, total: data.total };
+}
+
+export async function searchProducts(query) {
+    const res = await fetch(`${API_BASE_URL}/products/search?q=${query}`, { cache: "no-store" });
+    if (!res.ok) throw new Error("Search failed");
+    const data = await res.json();
+    const processed = (data.products || data).map(processProduct);
+    processed.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    return processed;
 }

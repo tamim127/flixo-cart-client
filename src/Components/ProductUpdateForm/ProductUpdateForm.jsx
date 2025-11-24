@@ -1,38 +1,16 @@
+// src/app/dashboard/manage-products/[id]/page.jsx   (এই ফোল্ডার স্ট্রাকচারে রাখো)
+
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useParams, useRouter } from "next/navigation"; // এইটা দরকার!
 import { Save, Loader2, ArrowLeft } from "lucide-react";
 
-// --- DUMMY API MOCKS (হার্ডকোডেড ডেটা) ---
-const DUMMY_PRODUCT = {
-  _id: "prod123",
-  title: "Smart Fitness Tracker Pro",
-  shortDescription: "Advanced health monitoring and long-lasting battery.",
-  fullDescription:
-    "This fitness tracker features a built-in ECG, blood oxygen saturation (SpO2) monitoring, and over 50 sports modes. Integrated GPS allows you to track your outdoor workouts accurately. Comes with a stylish metal alloy casing.",
-  price: 8990,
-  priority: "high",
-  imageUrl: "https://via.placeholder.com/400x300?text=Loaded+Product+Image",
-};
+const ProductUpdateForm = () => {
+  const { id } = useParams(); // এখান থেকে dynamic id নিবে
+  const router = useRouter();
 
-// সিমুলেশন: ডেটাবেস থেকে পণ্য লোড হচ্ছে
-const mockGetProductById = (id) =>
-  new Promise((resolve) => {
-    console.log(`Simulating fetch for product ID: ${id}`);
-    setTimeout(() => resolve(DUMMY_PRODUCT), 800); // 0.8 সেকেন্ড লোডিং সিমুলেট
-  });
-
-// সিমুলেশন: ডেটা আপডেট হচ্ছে
-const mockUpdateProduct = (id, data) =>
-  new Promise((resolve) => {
-    console.log(`Simulating update for product ID: ${id}`, data);
-    setTimeout(() => resolve({ ...data, _id: id }), 500);
-  });
-// --- END MOCKS ---
-
-const ProductUpdateForm = ({ productId }) => {
-  // যেহেতু এটি Update Form, তাই initial state ডামি ডেটা দিয়ে শুরু করা হলো
   const [formData, setFormData] = useState({
     title: "",
     shortDescription: "",
@@ -41,236 +19,263 @@ const ProductUpdateForm = ({ productId }) => {
     priority: "medium",
     imageUrl: "",
   });
-
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
-  // --- 1. ডেটা লোডিং লজিক (Read Operation) ---
-  const fetchProductData = useCallback(async () => {
+  const fetchProduct = useCallback(async () => {
+    if (!id) {
+      setError("Product ID not found in URL");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
+
     try {
-      const data = await mockGetProductById(productId);
-      setFormData(data); // লোড হওয়া ডেটা ফর্মের স্টেটে সেট করা হলো
+      const res = await fetch(`http://localhost:5000/products/${id}`);
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Failed to fetch product: ${res.status} ${errorText}`);
+      }
+
+      const data = await res.json();
+
+      // যদি product না পাওয়া যায়
+      if (!data || Object.keys(data).length === 0) {
+        throw new Error("Product not found");
+      }
+
+      setFormData({
+        title: data.title || "",
+        shortDescription: data.shortDescription || "",
+        fullDescription: data.fullDescription || "",
+        price: data.price || 0,
+        priority: data.priority || "medium",
+        imageUrl: data.imageUrl || "",
+      });
     } catch (err) {
-      setError("Failed to load product details for editing.");
+      console.error("Fetch error:", err);
+      setError(err.message || "Failed to load product. Please try again.");
     } finally {
       setLoading(false);
     }
-  }, [productId]);
+  }, [id]);
 
   useEffect(() => {
-    fetchProductData();
-  }, [fetchProductData]);
+    fetchProduct();
+  }, [fetchProduct]);
 
   const handleChange = (e) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "number" ? Number(value) : value,
+      [name]: type === "number" ? Number(value) || 0 : value,
     }));
   };
 
-  // --- 2. আপডেট সেভ লজিক (Update Operation) ---
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!id) return;
+
     setIsSubmitting(true);
     setError(null);
 
     try {
-      await mockUpdateProduct(productId, formData); // ডেটা আপডেটের জন্য API/Mock কল
-      alert(`Product "${formData.title}" updated successfully! (Simulated)`);
-      // Optionally redirect here
-    } catch (error) {
-      setError("Failed to save changes. Please try again.");
+      const res = await fetch(`http://localhost:5000/products/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Update failed: ${res.status} ${errorText}`);
+      }
+
+      alert("Product updated successfully!");
+      router.push("/dashboard/manage-products");
+    } catch (err) {
+      console.error(err);
+      setError("Failed to update product: " + err.message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // Loading State
   if (loading) {
     return (
-      <div className="text-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mx-auto" />
-        <p className="mt-2 text-gray-600">Fetching product details...</p>
+      <div className="flex flex-col items-center justify-center py-20">
+        <Loader2 className="h-10 w-10 animate-spin text-indigo-600" />
+        <p className="mt-4 text-gray-600">Loading product details...</p>
       </div>
     );
   }
 
-  if (error && !loading) {
+  // Error State
+  if (error) {
     return (
-      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-8 rounded-xl relative">
-        <h2 className="text-xl font-bold mb-3">Error Loading Product</h2>
-        <p className="mb-4">{error}</p>
+      <div className="max-w-2xl mx-auto bg-red-50 border border-red-200 text-red-700 px-6 py-8 rounded-xl">
+        <h2 className="text-2xl font-bold mb-4">Error Loading Product</h2>
+        <p className="mb-6">{error}</p>
         <Link
           href="/dashboard/manage-products"
-          className="text-indigo-600 hover:text-indigo-800 flex items-center font-medium"
+          className="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium"
         >
-          <ArrowLeft className="h-4 w-4 mr-2" /> Go back to Manage Products
+          <ArrowLeft className="h-5 w-5 mr-2" />
+          Back to Product List
         </Link>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="max-w-4xl mx-auto">
       <Link
         href="/dashboard/manage-products"
-        className="text-indigo-600 hover:text-indigo-800 flex items-center mb-6 font-medium"
+        className="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium mb-6"
       >
-        <ArrowLeft className="h-4 w-4 mr-2" /> Back to Product List
+        <ArrowLeft className="h-5 w-5 mr-2" />
+        Back to Product List
       </Link>
 
-      <h1 className="text-3xl font-extrabold text-gray-900 mb-4 border-b pb-4">
-        Edit Product: {formData.title}
+      <h1 className="text-3xl font-extrabold text-gray-900 mb-8 border-b pb-4">
+        Edit Product:{" "}
+        <span className="text-indigo-600">
+          {formData.title || "Loading..."}
+        </span>
       </h1>
 
-      {/* Image Preview (যদি URL থাকে) */}
-      {formData.imageUrl && (
-        <div className="mb-6 border p-4 rounded-lg bg-gray-50">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Current Image Preview
-          </label>
-          <img
-            src={formData.imageUrl}
-            alt="Product"
-            className="w-40 h-auto object-contain rounded-md border shadow-sm"
-          />
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-8 bg-white p-8 rounded-2xl shadow-lg border"
+      >
+        {formData.imageUrl && (
+          <div className="mb-8">
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
+              Current Image
+            </label>
+            <img
+              src={formData.imageUrl}
+              alt="Product preview"
+              className="w-48 h-auto rounded-lg border shadow-md object-cover"
+            />
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Title
+            </label>
+            <input
+              type="text"
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Price (৳)
+            </label>
+            <input
+              type="number"
+              name="price"
+              value={formData.price}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
         </div>
-      )}
 
-      {/* Title (এই ডেটাটিই আপনি আপডেট করতে চান) */}
-      <div>
-        <label
-          htmlFor="title"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Title
-        </label>
-        <input
-          type="text"
-          name="title"
-          id="title"
-          value={formData.title}
-          onChange={handleChange}
-          required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 border focus:ring-indigo-500 focus:border-indigo-500"
-        />
-      </div>
-
-      {/* Short Description */}
-      <div>
-        <label
-          htmlFor="shortDescription"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Short Description
-        </label>
-        <textarea
-          name="shortDescription"
-          id="shortDescription"
-          rows="2"
-          value={formData.shortDescription}
-          onChange={handleChange}
-          required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 border focus:ring-indigo-500 focus:border-indigo-500"
-        ></textarea>
-      </div>
-
-      {/* Full Description */}
-      <div>
-        <label
-          htmlFor="fullDescription"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Full Description
-        </label>
-        <textarea
-          name="fullDescription"
-          id="fullDescription"
-          rows="5"
-          value={formData.fullDescription}
-          onChange={handleChange}
-          required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 border focus:ring-indigo-500 focus:border-indigo-500"
-        ></textarea>
-      </div>
-
-      {/* Price & Priority */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
-          <label
-            htmlFor="price"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Price (৳)
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Short Description
           </label>
-          <input
-            type="number"
-            name="price"
-            id="price"
-            value={formData.price}
+          <textarea
+            name="shortDescription"
+            rows="3"
+            value={formData.shortDescription}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 border focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
 
         <div>
-          <label
-            htmlFor="priority"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Priority
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Full Description
           </label>
-          <select
-            name="priority"
-            id="priority"
-            value={formData.priority}
+          <textarea
+            name="fullDescription"
+            rows="6"
+            value={formData.fullDescription}
             onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 border bg-white focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-          </select>
-        </div>
-
-        <div>
-          <label
-            htmlFor="imageUrl"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Image URL
-          </label>
-          <input
-            type="url"
-            name="imageUrl"
-            id="imageUrl"
-            value={formData.imageUrl}
-            onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 border focus:ring-indigo-500 focus:border-indigo-500"
+            required
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
-      </div>
 
-      {/* --- 💾 সেভ বাটন --- */}
-      <div className="pt-5 border-t mt-6">
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="inline-flex justify-center items-center py-3 px-8 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 transition duration-150"
-        >
-          {isSubmitting ? (
-            <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-          ) : (
-            <Save className="h-5 w-5 mr-2" />
-          )}
-          Save Changes
-        </button>
-      </div>
-    </form>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Priority
+            </label>
+            <select
+              name="priority"
+              value={formData.priority}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Image URL
+            </label>
+            <input
+              type="url"
+              name="imageUrl"
+              value={formData.imageUrl}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
+        </div>
+
+        <div className="pt-6 border-t">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="inline-flex items-center px-8 py-4 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:bg-indigo-400 transition shadow-md"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-5 w-5 mr-3 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-5 w-5 mr-3" />
+                Save Changes
+              </>
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 
