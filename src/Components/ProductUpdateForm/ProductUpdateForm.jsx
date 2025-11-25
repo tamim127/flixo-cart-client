@@ -8,7 +8,7 @@ import { useParams, useRouter } from "next/navigation"; // এইটা দর�
 import { Save, Loader2, ArrowLeft } from "lucide-react";
 
 const ProductUpdateForm = () => {
-  const { id } = useParams(); // এখান থেকে dynamic id নিবে
+  const { id } = useParams();
   const router = useRouter();
 
   const [formData, setFormData] = useState({
@@ -34,7 +34,7 @@ const ProductUpdateForm = () => {
     setError(null);
 
     try {
-      const res = await fetch(`http://localhost:5000/products/${id}`);
+      const res = await fetch(`${API_BASE_URL}/products/${id}`);
 
       if (!res.ok) {
         const errorText = await res.text();
@@ -43,7 +43,6 @@ const ProductUpdateForm = () => {
 
       const data = await res.json();
 
-      // যদি product না পাওয়া যায়
       if (!data || Object.keys(data).length === 0) {
         throw new Error("Product not found");
       }
@@ -84,7 +83,7 @@ const ProductUpdateForm = () => {
     setError(null);
 
     try {
-      const res = await fetch(`http://localhost:5000/products/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/products/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

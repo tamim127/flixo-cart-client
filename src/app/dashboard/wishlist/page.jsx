@@ -5,42 +5,42 @@ import { Heart, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
-// ডামি ডেটা (প্রোডাকশনে API থেকে ফেচ করা হবে)
+
 const wishlistItems = [
   {
     id: 101,
     name: "Men’s Regular Fit Casual Shirt",
     price: 1850,
-    imageUrl: "/images/product-shirt.jpg", // আপনার ইমেজ পাথ পরিবর্তন করুন
+    imageUrl: "/images/product-shirt.jpg", 
     stock: true,
   },
   {
     id: 102,
     name: "Wireless Bluetooth Headphone",
     price: 4500,
-    imageUrl: "/images/product-headphone.jpg", // আপনার ইমেজ পাথ পরিবর্তন করুন
+    imageUrl: "/images/product-headphone.jpg",
     stock: false,
   },
   {
     id: 103,
     name: "Smart Watch Series 7",
     price: 12999,
-    imageUrl: "/images/product-watch.jpg", // আপনার ইমেজ পাথ পরিবর্তন করুন
+    imageUrl: "/images/product-watch.jpg", 
     stock: true,
   },
 ];
 
 const WishlistPage = () => {
-  // আইটেম রিমুভ করার ডামি ফাংশন
+ 
   const handleRemove = (itemId) => {
     console.log(`Removing item: ${itemId}`);
-    // এখানে API কল করে উইশলিস্ট থেকে আইটেম রিমুভ করার লজিক যুক্ত হবে।
+    
   };
 
-  // কার্টে অ্যাড করার ডামি ফাংশন
+  
   const handleAddToCart = (item) => {
     console.log(`Adding to cart: ${item.name}`);
-    // এখানে API কল করে কার্টে অ্যাড করার লজিক যুক্ত হবে।
+    
   };
 
   return (
@@ -78,7 +78,7 @@ const WishlistPage = () => {
             >
               {/* Product Image */}
               <div className="w-20 h-20 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
-                {/* Next.js Image Component ব্যবহার করুন */}
+                {/* Next.js Image Component  */}
                 <Image
                   src={item.imageUrl}
                   alt={item.name}

@@ -1,4 +1,4 @@
-// src/app/dashboard/manage-products/page.jsx
+
 
 "use client";
 
@@ -51,7 +51,7 @@ const ManageProductsPage = () => {
   }, [currentUser, fetchAllProducts]);
 
   const handleDelete = async (id) => {
-    if (!confirm("এই প্রোডাক্টটি পার্মানেন্টলি ডিলিট করবে?")) return;
+    if (!confirm("Do You Want this Product Permanently?")) return;
 
     try {
       setDeletingId(id);

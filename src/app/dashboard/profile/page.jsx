@@ -3,7 +3,7 @@
 import React from "react";
 import { User, Mail, Phone, MapPin, Save } from "lucide-react";
 
-// ডামি ডেটা (প্রোডাকশনে API থেকে ফেচ করা হবে)
+
 const userProfile = {
   firstName: "Md. Hasibul",
   lastName: "Islam",
@@ -13,12 +13,11 @@ const userProfile = {
 };
 
 const ProfileSettingsPage = () => {
-  // প্রোডাকশনে, আপনি ফর্ম স্টেট পরিচালনার জন্য useState এবং ফর্ম সাবমিট হ্যান্ডলিং এর জন্য
-  // একটি async ফাংশন ব্যবহার করবেন।
+ 
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Profile data submitted!");
-    // এখানে API কল করে ডেটা সেভ করার লজিক যুক্ত হবে।
+    
   };
 
   return (
@@ -30,7 +29,7 @@ const ProfileSettingsPage = () => {
 
       <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* নাম (First Name & Last Name) */}
+         
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label
@@ -70,7 +69,7 @@ const ProfileSettingsPage = () => {
             </div>
           </div>
 
-          {/* ইমেইল (Email) */}
+          {/* (Email) */}
           <div>
             <label
               htmlFor="email"
@@ -91,7 +90,7 @@ const ProfileSettingsPage = () => {
             </div>
           </div>
 
-          {/* ফোন নম্বর (Phone Number) */}
+          {/*  (Phone Number) */}
           <div>
             <label
               htmlFor="phone"
@@ -110,7 +109,7 @@ const ProfileSettingsPage = () => {
             </div>
           </div>
 
-          {/* ডিফল্ট এড্রেস (Default Address - Read-only here) */}
+          {/* (Default Address - Read-only here) */}
           <div>
             <label
               htmlFor="address"
@@ -141,7 +140,7 @@ const ProfileSettingsPage = () => {
             </div>
           </div>
 
-          {/* সেভ বাটন (Save Button) */}
+          {/*  (Save Button) */}
           <div className="pt-5 border-t mt-6">
             <button
               type="submit"

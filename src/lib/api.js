@@ -1,6 +1,6 @@
-// src/lib/api.js
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;// অথবা https://dummyjson.com/products
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 // Utility: Calculate original price
 function calculateOriginalPrice(price, discountPercentage) {
@@ -47,7 +47,7 @@ export async function getProducts(options = {}) {
     };
 }
 
-// 2. Admin Dashboard - ALL products + OLDEST FIRST (তুমি যা চেয়েছিলে!)
+// 2. Admin Dashboard - ALL products + OLDEST FIRST 
 export async function getAllProductsForAdmin() {
     const res = await fetch(`${API_BASE_URL}/products?limit=9999`, {
         cache: "no-store",
@@ -58,11 +58,11 @@ export async function getAllProductsForAdmin() {
     const data = await res.json();
     let products = data.products || data || [];
 
-    // পুরানো প্রোডাক্ট সবার উপরে (Oldest First)
+
     products.sort((a, b) => {
         const dateA = new Date(a.meta?.createdAt || a.createdAt || 0).getTime();
         const dateB = new Date(b.meta?.createdAt || b.createdAt || 0).getTime();
-        return dateA - dateB; // এটাই ম্যাজিক! পুরানো = উপরে
+        return dateA - dateB;
     });
 
     return products.map(processProduct);

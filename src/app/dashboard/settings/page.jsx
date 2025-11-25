@@ -4,16 +4,16 @@ import React from "react";
 import { Settings, Lock, Bell, Trash2, Save } from "lucide-react";
 
 const AccountSettingsPage = () => {
-  // প্রোডাকশনে, এখানে API কল করে ডেটা সেভ করা বা পাসওয়ার্ড পরিবর্তন করার লজিক যুক্ত হবে।
+ 
   const handlePasswordChange = (e) => {
     e.preventDefault();
     console.log("Password change form submitted!");
-    // পাসওয়ার্ড পরিবর্তনের API কল লজিক
+ 
   };
 
   const handleNotificationToggle = (e) => {
     console.log(`Email Notifications: ${e.target.checked}`);
-    // নোটিফিকেশন সেটিংস আপডেটের API কল লজিক
+
   };
 
   return (

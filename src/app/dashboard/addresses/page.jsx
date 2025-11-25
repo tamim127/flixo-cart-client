@@ -3,7 +3,7 @@
 import React from "react";
 import { MapPin, Plus, Edit, Trash2, CheckCircle } from "lucide-react";
 
-// ডামি ডেটা (প্রোডাকশনে API থেকে ফেচ করা হবে)
+
 const addresses = [
   {
     id: 1,
@@ -26,7 +26,7 @@ const addresses = [
 ];
 
 const AddressesPage = () => {
-  // ঠিকানা এডিট, ডিলিট, ডিফল্ট করার ডামি ফাংশন
+
   const handleEdit = (id) => console.log(`Editing address: ${id}`);
   const handleDelete = (id) => console.log(`Deleting address: ${id}`);
   const handleSetDefault = (id) =>
@@ -41,7 +41,7 @@ const AddressesPage = () => {
         </h2>
         <button
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150"
-          // প্রোডাকশনে, এখানে একটি অ্যাড্রেস অ্যাড করার মডাল (Modal) ট্রিগার করতে হবে
+         
           onClick={() => console.log("Open Add Address Modal")}
         >
           <Plus className="h-5 w-5 mr-2" />
