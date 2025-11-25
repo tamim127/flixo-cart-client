@@ -17,11 +17,11 @@ export default function RegisterPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (currentUser) {
-      router.push("/"); // ✅ safe
+      router.push("/"); 
     }
   }, [currentUser, router]);
 
-  // logged in হলে কিছু render না করা বা spinner দেখানো
+  
   if (currentUser) return null;
 
   const handleSubmit = async (e) => {
