@@ -12,9 +12,7 @@ export default async function HomePage() {
   } catch (error) {
     console.error("Error fetching products:", error);
   }
-  
 
-  
   // --- Extract categories with counts ---
   const categoriesMap = {};
   products.forEach((p) => {

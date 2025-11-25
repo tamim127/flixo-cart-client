@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/Context/AuthContext";
-
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -16,9 +15,14 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
 
   // Redirect if already logged in
-  if (currentUser) {
-    router.push("/");
-  }
+  useEffect(() => {
+    if (currentUser) {
+      router.push("/"); // ✅ safe
+    }
+  }, [currentUser, router]);
+
+  // logged in হলে কিছু render না করা বা spinner দেখানো
+  if (currentUser) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();

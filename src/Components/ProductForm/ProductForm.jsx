@@ -1,7 +1,4 @@
-
 "use client";
-
-
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -16,7 +13,7 @@ import {
 } from "lucide-react";
 import { getProductById, createProduct, updateProduct } from "@/lib/api";
 import { useAuth } from "@/Context/AuthContext";
- // Auth context for protection
+// Auth context for protection
 
 // Initial State based on your JSON structure (minimal fields required for a form)
 const initialFormData = {
@@ -225,7 +222,7 @@ const ProductForm = ({ productId = null }) => {
               <input
                 type="number"
                 name="price"
-                value={formData.price}
+                value={formData.price || ""}
                 onChange={handleChange}
                 required
                 min="0"
@@ -325,5 +322,3 @@ const ProductForm = ({ productId = null }) => {
 };
 
 export default ProductForm;
-
-

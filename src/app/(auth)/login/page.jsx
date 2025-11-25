@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/Context/AuthContext";
 
@@ -15,9 +15,16 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   // Redirect if already logged in
-  if (currentUser) {
-    router.push("/");
-  }
+  useEffect(() => {
+    if (currentUser) {
+      router.push("/"); // ✅ safe
+    }
+  }, [currentUser, router]);
+
+  // যদি user logged in হয়, কিছুই render না করা বা loading দেখানো
+  if (currentUser) return null;
+
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();

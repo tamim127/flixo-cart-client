@@ -1,7 +1,7 @@
 // src/app/dashboard/layout.jsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -42,6 +42,12 @@ export default function DashboardLayout({ children }) {
   const router = useRouter();
   const { currentUser, loading, logout } = useAuth();
 
+  useEffect(() => {
+    if (!currentUser) {
+      router.push("/login"); // ✅ safe in useEffect
+    }
+  }, [currentUser, router]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -50,10 +56,9 @@ export default function DashboardLayout({ children }) {
     );
   }
 
-  if (!currentUser) {
-    router.push("/login");
-    return null;
-  }
+  // currentUser না থাকলে loading spinner বা null দেখাও
+  if (!currentUser) return null;
+
 
   const handleLogout = async () => {
     await logout();

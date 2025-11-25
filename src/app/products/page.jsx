@@ -5,10 +5,11 @@ import Link from "next/link";
 import { Zap, Star } from "lucide-react";
 import { useState, useEffect } from "react";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 // Server API fetch function
 async function getDeals({ limit = 18, skip = 0 }) {
   const res = await fetch(
-    `http://localhost:5000/products?limit=${limit}&skip=${skip}&deal=true`,
+    `${API_BASE_URL}/products?limit=${limit}&skip=${skip}&deal=true`,
     { cache: "no-store" }
   );
   if (!res.ok) throw new Error("Failed to fetch deals");

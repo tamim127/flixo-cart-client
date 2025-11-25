@@ -4,8 +4,10 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Star, Truck, Shield, RefreshCw, Clock, Package } from "lucide-react";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 async function getProduct(id) {
-  const res = await fetch(`http://localhost:5000/products/${id}`, {
+  const res = await fetch(`${API_BASE_URL}/products/${id}`, {
     cache: "no-store",
   });
   if (!res.ok) return null;
