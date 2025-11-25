@@ -5,7 +5,7 @@ import ProductForm from "@/Components/ProductForm/ProductForm";
 
 
 const AddProductPage = () => {
-  return <ProductForm productId={null} />; // Creates a new product
+  return <ProductForm productId={null} />; 
 };
 
 export default AddProductPage;

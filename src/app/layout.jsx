@@ -12,7 +12,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html>
-      <body>
+      <body cz-shortcut-listen="true">
         <div className="max-w-7xl mx-auto flex flex-col min-h-screen">
           <AuthProvider>
             <Navbar />

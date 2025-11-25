@@ -12,6 +12,9 @@ function createSlug(name) {
     .trim();
 }
 
+
+
+
 export default async function AllCategoriesPage() {
   let categories = [];
 

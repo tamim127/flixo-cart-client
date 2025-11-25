@@ -71,6 +71,8 @@ export default function CartPage() {
     setCart(cart.filter((item) => item.id !== id));
   };
 
+ 
+
   const applyCoupon = () => {
     if (coupon === "SAVE20" || coupon === "save20") {
       setDiscount(20);

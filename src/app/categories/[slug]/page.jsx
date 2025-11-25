@@ -6,6 +6,8 @@ function slugToTitle(slug) {
   return slug.replace(/-/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+
+
 function createSlug(name) {
   if (!name) return "";
   return name

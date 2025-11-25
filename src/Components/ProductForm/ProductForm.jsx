@@ -1,5 +1,7 @@
-// src/components/ProductForm.jsx (Complete Implementation)
+
 "use client";
+
+
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -324,5 +326,4 @@ const ProductForm = ({ productId = null }) => {
 
 export default ProductForm;
 
-// Note: To use this component for adding, use: <ProductForm />
-// To use this component for editing, use: <ProductForm productId={params.id} />
+

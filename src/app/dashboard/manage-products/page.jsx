@@ -27,6 +27,8 @@ const ManageProductsPage = () => {
   const { currentUser, loading: authLoading } = useAuth();
   const router = useRouter();
 
+   
+
   useEffect(() => {
     if (!authLoading && !currentUser) router.replace("/login");
   }, [currentUser, authLoading, router]);

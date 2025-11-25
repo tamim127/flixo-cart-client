@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Star } from "lucide-react";
 
+
 export default function ProductCard({ product }) {
   const discount = Math.round(
     ((product.originalPrice - product.price) / product.originalPrice) * 100

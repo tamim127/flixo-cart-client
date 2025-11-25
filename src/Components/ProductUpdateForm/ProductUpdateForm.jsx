@@ -7,6 +7,8 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation"; // এইটা দরকার!
 import { Save, Loader2, ArrowLeft } from "lucide-react";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 const ProductUpdateForm = () => {
   const { id } = useParams();
   const router = useRouter();
