@@ -1,94 +1,43 @@
-// app/cart/page.js   → localhost:3000/cart
-
+// app/cart/page.js
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCart } from "@/Context/CartContext";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
+
 
 export default function CartPage() {
-  const [cart, setCart] = useState([]);
+  const { cart, addToCart, removeFromCart, totalItems, totalPrice, loading } =
+    useCart();
+
   const [coupon, setCoupon] = useState("");
   const [discount, setDiscount] = useState(0);
 
-  // লোকালস্টোরেজ থেকে কার্ট লোড
-  useEffect(() => {
-    const savedCart = localStorage.getItem("cart");
-    if (savedCart) {
-      setCart(JSON.parse(savedCart));
-    } else {
-      // ডেমোর জন্য কিছু প্রোডাক্ট দিলাম
-      const demoCart = [
-        {
-          id: 1,
-          name: "Stainless Steel Cookware Set",
-          price: 2890,
-          qty: 1,
-          img: "https://images.unsplash.com/photo-1586023492125-27b2c486e5c7?w=400",
-        },
-        {
-          id: 2,
-          name: "Bluetooth Earbuds Pro",
-          price: 1490,
-          qty: 2,
-          img: "https://images.unsplash.com/photo-1606220588913-b474e1f88c8f?w=400",
-        },
-        {
-          id: 3,
-          name: "Men's Cotton T-Shirt (Pack of 3)",
-          price: 890,
-          qty: 1,
-          img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400",
-        },
-        {
-          id: 4,
-          name: "LED Desk Lamp Touch Control",
-          price: 1290,
-          qty: 1,
-          img: "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?w=400",
-        },
-      ];
-      setCart(demoCart);
-      localStorage.setItem("cart", JSON.stringify(demoCart));
-    }
-  }, []);
-
-  // কার্ট আপডেট হলে লোকালস্টোরেজে সেভ
-  useEffect(() => {
-    if (cart.length > 0) {
-      localStorage.setItem("cart", JSON.stringify(cart));
-    }
-  }, [cart]);
-
-  const updateQuantity = (id, newQty) => {
-    if (newQty < 1) return;
-    setCart(
-      cart.map((item) => (item.id === id ? { ...item, qty: newQty } : item))
-    );
-  };
-
-  const removeItem = (id) => {
-    setCart(cart.filter((item) => item.id !== id));
-  };
-
- 
-
   const applyCoupon = () => {
-    if (coupon === "SAVE20" || coupon === "save20") {
+    if (coupon.toUpperCase() === "SAVE20") {
       setDiscount(20);
-      alert("কুপন সফলভাবে যোগ হয়েছে! ২০% ডিসকাউন্ট পেয়েছেন");
-    } else if (coupon === "FREE50" || coupon === "free50") {
+    } else if (coupon.toUpperCase() === "FREE50") {
       setDiscount(50);
-      alert("৫০% ডিসকাউন্ট পেয়েছেন!");
     } else {
-      alert("ভুল কুপন কোড");
+      alert("Invalid coupon code");
+      setDiscount(0);
     }
+    setCoupon("");
   };
 
-  const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const subtotal = totalPrice;
   const discountAmount = discount > 0 ? (subtotal * discount) / 100 : 0;
-  const deliveryCharge = subtotal > 999 ? 0 : 80;
-  const total = subtotal - discountAmount + deliveryCharge;
+  const deliveryCharge = subtotal >= 50 ? 0 : 8; // $50+ = Free delivery
+  const finalTotal = subtotal - discountAmount + deliveryCharge;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-3xl font-bold text-gray-600">Loading cart...</p>
+      </div>
+    );
+  }
 
   if (cart.length === 0) {
     return (
@@ -111,7 +60,7 @@ export default function CartPage() {
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-7xl mx-auto px-6">
           <h1 className="text-5xl font-black mb-10 text-center">
-            Your Cart ({cart.length} items)
+            Your Cart ({totalItems} {totalItems === 1 ? "item" : "items"})
           </h1>
 
           <div className="grid lg:grid-cols-3 gap-10">
@@ -119,37 +68,49 @@ export default function CartPage() {
             <div className="lg:col-span-2 space-y-6">
               {cart.map((item) => (
                 <div
-                  key={item.id}
-                  className="bg-white rounded-3xl shadow-xl p-6 flex gap-6 hover:shadow-2xl transition"
+                  key={item.productId}
+                  className="bg-white rounded-3xl shadow-xl p-6 flex flex-col sm:flex-row gap-6 hover:shadow-2xl transition"
                 >
-                  <div className="relative w-32 h-32 flex-shrink-0">
+                  <div className="relative w-full sm:w-32 h-32 flex-shrink-0">
                     <Image
-                      src={item.img}
-                      alt={item.name}
+                      src={item.imageUrl || "/placeholder.jpg"}
+                      alt={item.title}
                       fill
                       className="object-cover rounded-2xl"
                     />
                   </div>
 
                   <div className="flex-1">
-                    <h3 className="text-xl font-bold mb-2">{item.name}</h3>
+                    <h3 className="text-xl font-bold mb-2">{item.title}</h3>
                     <p className="text-2xl font-black text-red-600 mb-4">
-                      ৳{item.price.toLocaleString()}
+                      ${item.price.toFixed(2)}
                     </p>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap items-center gap-4">
                       <div className="flex items-center border-2 border-gray-300 rounded-full">
                         <button
-                          onClick={() => updateQuantity(item.id, item.qty - 1)}
+                          onClick={() => {
+                            if (item.quantity > 1) {
+                              //  remove + add (quantity - 1)
+                              removeFromCart(item.productId);
+                              for (let i = 0; i < item.quantity - 1; i++) {
+                                addToCart({ ...item, _id: item.productId });
+                              }
+                            } else {
+                              removeFromCart(item.productId);
+                            }
+                          }}
                           className="w-12 h-12 hover:bg-gray-100 rounded-full text-xl font-bold"
                         >
-                          -
+                          −
                         </button>
                         <span className="w-16 text-center text-xl font-bold">
-                          {item.qty}
+                          {item.quantity}
                         </span>
                         <button
-                          onClick={() => updateQuantity(item.id, item.qty + 1)}
+                          onClick={() =>
+                            addToCart({ ...item, _id: item.productId })
+                          }
                           className="w-12 h-12 hover:bg-gray-100 rounded-full text-xl font-bold"
                         >
                           +
@@ -157,7 +118,7 @@ export default function CartPage() {
                       </div>
 
                       <button
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => removeFromCart(item.productId)}
                         className="text-red-600 hover:text-red-800 font-bold"
                       >
                         Remove
@@ -165,9 +126,9 @@ export default function CartPage() {
                     </div>
                   </div>
 
-                  <div className="text-right">
+                  <div className="text-right sm:text-left">
                     <p className="text-2xl font-black">
-                      ৳{(item.price * item.qty).toLocaleString()}
+                      ${(item.price * item.quantity).toFixed(2)}
                     </p>
                   </div>
                 </div>
@@ -182,31 +143,31 @@ export default function CartPage() {
                 <div className="space-y-4 text-xl">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span className="font-bold">
-                      ৳{subtotal.toLocaleString()}
-                    </span>
+                    <span className="font-bold">${subtotal.toFixed(2)}</span>
                   </div>
                   {discount > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>Discount ({discount}%)</span>
                       <span className="font-bold">
-                        -৳{discountAmount.toFixed(0)}
+                        -${discountAmount.toFixed(2)}
                       </span>
                     </div>
                   )}
                   <div className="flex justify-between">
                     <span>Delivery Charge</span>
                     <span
-                      className={deliveryCharge === 0 ? "text-green-600" : ""}
+                      className={
+                        deliveryCharge === 0 ? "text-green-600 font-bold" : ""
+                      }
                     >
-                      {deliveryCharge === 0 ? "FREE" : `৳${deliveryCharge}`}
+                      {deliveryCharge === 0 ? "FREE" : `$${deliveryCharge}`}
                     </span>
                   </div>
                   <div className="border-t-2 border-dashed pt-4">
                     <div className="flex justify-between text-3xl font-black">
                       <span>Total</span>
                       <span className="text-red-600">
-                        ৳{total.toLocaleString()}
+                        ${finalTotal.toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -219,18 +180,26 @@ export default function CartPage() {
                       type="text"
                       value={coupon}
                       onChange={(e) => setCoupon(e.target.value)}
+                      onKeyPress={(e) => e.key === "Enter" && applyCoupon()}
                       placeholder="Enter coupon code"
-                      className="flex-1 px-6 py-4 border-2 border-gray-300 rounded-full text-lg"
+                      className="flex-1 px-6 py-4 border-2 border-gray-300 rounded-full text-lg focus:outline-none focus:border-black"
                     />
                     <button
                       onClick={applyCoupon}
-                      className="bg-black text-white px-8 py-4 rounded-full font-bold hover:bg-gray-800"
+                      className="bg-black text-white px-8 py-4 rounded-full font-bold hover:bg-gray-800 transition"
                     >
                       Apply
                     </button>
                   </div>
                   <p className="text-sm text-gray-600 mt-2">
-                    Try: SAVE20 or FREE50
+                    Try:{" "}
+                    <code className="bg-gray-200 px-2 py-1 rounded">
+                      SAVE20
+                    </code>{" "}
+                    or{" "}
+                    <code className="bg-gray-200 px-2 py-1 rounded">
+                      FREE50
+                    </code>
                   </p>
                 </div>
 

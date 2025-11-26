@@ -1,118 +1,175 @@
-// src/app/dashboard/page.jsx
+// app/dashboard/page.jsx
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ShoppingBag, Package, Heart, ArrowRight } from "lucide-react";
-
-const stats = [
-  {
-    name: "Total Orders",
-    value: 48,
-    icon: ShoppingBag,
-    href: "/dashboard/orders",
-    color: "from-blue-500 to-cyan-500",
-  },
-  {
-    name: "Pending Delivery",
-    value: 8,
-    icon: Package,
-    href: "/dashboard/orders?status=pending",
-    color: "from-orange-500 to-red-500",
-  },
-  {
-    name: "Wishlist Items",
-    value: 23,
-    icon: Heart,
-    href: "/dashboard/wishlist",
-    color: "from-pink-500 to-rose-500",
-  },
-];
-
-const recentOrders = [
-  {
-    id: "ORD-2025-001",
-    date: "Nov 24, 2025",
-    amount: "৳ 8,499",
-    status: "Delivered",
-    badge: "bg-green-100 text-green-800",
-  },
-  {
-    id: "ORD-2025-002",
-    date: "Nov 23, 2025",
-    amount: "৳ 5,299",
-    status: "Shipped",
-    badge: "bg-yellow-100 text-yellow-800",
-  },
-  {
-    id: "ORD-2025-003",
-    date: "Nov 22, 2025",
-    amount: "৳ 12,999",
-    status: "Processing",
-    badge: "bg-blue-100 text-blue-800",
-  },
-];
+import { useAuth } from "@/Context/AuthContext";
+import { getMyProducts } from "@/lib/api";
+import toast from "react-hot-toast";
+import {
+  Package,
+  PlusCircle,
+  ShoppingBag,
+  DollarSign,
+  TrendingUp,
+  Loader2,
+} from "lucide-react";
 
 export default function DashboardHome() {
+  const { currentUser, loading: authLoading } = useAuth();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const userName =
+    currentUser?.displayName || currentUser?.email?.split("@")[0] || "Seller";
+
+  useEffect(() => {
+    if (!currentUser?.uid) return;
+
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        const { products } = await getMyProducts(currentUser.uid, 1, 1000); // 1000 limit for all products
+        setProducts(products);
+      } catch (err) {
+        console.error("Failed to load products:", err);
+        toast.error("Failed to load your store data");
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, [currentUser?.uid]);
+
+  // Wait for auth
+  if (authLoading || loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-pink-50">
+        <div className="text-center">
+          <Loader2 className="w-20 h-20 animate-spin text-red-600 mx-auto" />
+          <p className="mt-8 text-2xl font-bold text-gray-700">
+            Loading your store...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Calculations
+  const myAddedProducts = products.filter(
+    (p) => p.sellerId === currentUser?.uid
+  );
+  const totalProducts = products.length;
+  const inStock = products.filter((p) => p.stock > 0).length;
+  const totalValue = myAddedProducts.reduce(
+    (sum, p) => sum + (p.price || 0) * (p.stock || 0),
+    0
+  );
+
   return (
-    <div className=" max-w-6xl space-y-10">
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {stats.map((stat) => (
-          <Link href={stat.href} key={stat.name}>
-            <div className="group bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <div className="flex items-center justify-between mb-4">
-                <div
-                  className={`p-3 rounded-xl bg-gradient-to-br ${stat.color} text-white`}
-                >
-                  <stat.icon className="h-8 w-8" />
-                </div>
-                <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-indigo-600 transition" />
-              </div>
-              <p className="text-sm font-medium text-gray-600">{stat.name}</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">
-                {stat.value}
-              </p>
-            </div>
-          </Link>
-        ))}
-      </div>
-
-      {/* Recent Orders */}
+    <div className="space-y-12 pb-20">
+      {/* Welcome */}
       <div>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Recent Orders</h2>
-          <Link
-            href="/dashboard/orders"
-            className="text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-2"
-          >
-            View All <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-
-        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-          {recentOrders.map((order) => (
-            <div
-              key={order.id}
-              className="p-6 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-bold text-gray-900 text-lg">{order.id}</p>
-                  <p className="text-sm text-gray-500 mt-1">{order.date}</p>
-                </div>
-                <div className="text-right">
-                  <span
-                    className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-bold ${order.badge}`}
-                  >
-                    {order.status}
-                  </span>
-                  <p className="text-2xl font-bold text-gray-900 mt-2">
-                    {order.amount}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <h1 className="text-5xl font-black text-gray-900">
+          Welcome back,{" "}
+          <span className="bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent animate-pulse">
+            {userName}!
+          </span>
+        </h1>
+        <p className="text-xl text-gray-600 mt-3">Here's your store overview</p>
       </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <StatCard
+          icon={Package}
+          title="Your Products"
+          value={myAddedProducts.length}
+          color="from-purple-500 to-pink-500"
+          gradient
+        />
+        <StatCard
+          icon={ShoppingBag}
+          title="Total Listed"
+          value={totalProducts}
+          color="from-blue-500 to-cyan-500"
+          gradient
+        />
+        <StatCard
+          icon={TrendingUp}
+          title="In Stock"
+          value={inStock}
+          color="from-orange-500 to-red-500"
+          gradient
+        />
+        <StatCard
+          icon={DollarSign}
+          title="Total Value"
+          value={`৳ ${totalValue.toLocaleString()}`}
+          color="from-green-500 to-emerald-500"
+          gradient
+        />
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <Link
+          href="/dashboard/add-product"
+          className="group relative overflow-hidden bg-gradient-to-br from-red-600 to-pink-600 text-white rounded-3xl p-12 text-center hover:scale-105 transition-all duration-500 shadow-2xl"
+        >
+          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+          <PlusCircle className="w-20 h-20 mx-auto mb-6 relative z-10" />
+          <h3 className="text-3xl font-bold relative z-10">Add New Product</h3>
+          <p className="text-white/90 mt-3 text-lg relative z-10">
+            Expand your inventory
+          </p>
+        </Link>
+
+        <Link
+          href="/dashboard/manage-products"
+          className="group relative overflow-hidden bg-gradient-to-br from-purple-600 to-indigo-600 text-white rounded-3xl p-12 text-center hover:scale-105 transition-all duration-500 shadow-2xl"
+        >
+          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+          <Package className="w-20 h-20 mx-auto mb-6 relative z-10" />
+          <h3 className="text-3xl font-bold relative z-10">Manage Products</h3>
+          <p className="text-white/90 mt-3 text-lg relative z-10">
+            Edit, update or remove items
+          </p>
+        </Link>
+      </div>
+
+      {/* Empty State */}
+      {myAddedProducts.length === 0 && (
+        <div className="text-center py-16">
+          <p className="text-3xl font-bold text-gray-600">
+            Your store is empty
+          </p>
+          <p className="text-xl text-gray-500 mt-4">
+            Add your first product and start selling!
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Stat Card Component
+function StatCard({ icon: Icon, title, value, color, gradient }) {
+  return (
+    <div
+      className={`bg-white rounded-3xl shadow-xl p-8 border hover:shadow-2xl transition-all duration-300 ${
+        gradient ? "hover:scale-105" : ""
+      }`}
+    >
+      <div
+        className={`p-4 rounded-2xl bg-gradient-to-br ${color} text-white w-fit shadow-lg`}
+      >
+        <Icon className="w-12 h-12" />
+      </div>
+      <p className="text-gray-600 mt-6 text-lg font-medium">{title}</p>
+      <p className="text-5xl font-black text-gray-900 mt-3">{value}</p>
     </div>
   );
 }

@@ -1,283 +1,308 @@
-// src/app/dashboard/manage-products/[id]/page.jsx   (এই ফোল্ডার স্ট্রাকচারে রাখো)
-
+// src/Components/ProductUpdateForm/ProductUpdateForm.jsx
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation"; // এইটা দরকার!
-import { Save, Loader2, ArrowLeft } from "lucide-react";
+import toast from "react-hot-toast";
+import { useAuth } from "@/Context/AuthContext";
+import { Save, Loader2, ArrowLeft, Upload, X, Package } from "lucide-react";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 
 const ProductUpdateForm = () => {
   const { id } = useParams();
   const router = useRouter();
+  const { currentUser } = useAuth();
 
   const [formData, setFormData] = useState({
     title: "",
-    shortDescription: "",
-    fullDescription: "",
-    price: 0,
-    priority: "medium",
-    imageUrl: "",
+    description: "",
+    category: "",
+    price: "",
+    discountPercentage: 0,
+    stock: "",
+    brand: "",
+    thumbnail: "",
+    tags: "",
   });
+  const [imagePreview, setImagePreview] = useState("");
   const [loading, setLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
-
-  const fetchProduct = useCallback(async () => {
-    if (!id) {
-      setError("Product ID not found in URL");
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetch(`${API_BASE_URL}/products/${id}`);
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Failed to fetch product: ${res.status} ${errorText}`);
-      }
-
-      const data = await res.json();
-
-      if (!data || Object.keys(data).length === 0) {
-        throw new Error("Product not found");
-      }
-
-      setFormData({
-        title: data.title || "",
-        shortDescription: data.shortDescription || "",
-        fullDescription: data.fullDescription || "",
-        price: data.price || 0,
-        priority: data.priority || "medium",
-        imageUrl: data.imageUrl || "",
-      });
-    } catch (err) {
-      console.error("Fetch error:", err);
-      setError(err.message || "Failed to load product. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    if (!id || !currentUser) return;
+
+    const fetchProduct = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/products/${id}`);
+        if (!res.ok) throw new Error("Product not found");
+
+        const product = await res.json();
+
+        // Only owner can edit
+        if (product.sellerId && product.sellerId !== currentUser.uid) {
+          toast.error("You can only edit your own products!");
+          router.replace("/dashboard/manage-products");
+          return;
+        }
+
+        setFormData({
+          title: product.title || "",
+          description: product.description || "",
+          category: product.category || "",
+          price: product.price || "",
+          discountPercentage: product.discountPercentage || 0,
+          stock: product.stock || "",
+          brand: product.brand || "",
+          thumbnail: product.thumbnail || product.images?.[0] || "",
+          tags: Array.isArray(product.tags) ? product.tags.join(", ") : "",
+        });
+        setImagePreview(product.thumbnail || product.images?.[0] || "");
+      } catch (err) {
+        toast.error("Failed to load product");
+        router.replace("/dashboard/manage-products");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchProduct();
-  }, [fetchProduct]);
+  }, [id, currentUser, router]);
 
   const handleChange = (e) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "number" ? Number(value) || 0 : value,
-    }));
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "thumbnail") setImagePreview(value);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!id) return;
+    setSubmitting(true);
 
-    setIsSubmitting(true);
-    setError(null);
+    const payload = {
+      ...formData,
+      price: parseFloat(formData.price) || 0,
+      stock: parseInt(formData.stock) || 0,
+      discountPercentage: parseFloat(formData.discountPercentage) || 0,
+      tags: formData.tags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean),
+      images: formData.thumbnail ? [formData.thumbnail] : [],
+      updatedAt: new Date(),
+    };
 
     try {
       const res = await fetch(`${API_BASE_URL}/products/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Update failed: ${res.status} ${errorText}`);
-      }
+      if (!res.ok) throw new Error("Update failed");
 
-      alert("Product updated successfully!");
+      toast.success("Product updated successfully!");
       router.push("/dashboard/manage-products");
     } catch (err) {
-      console.error(err);
-      setError("Failed to update product: " + err.message);
+      toast.error("Failed to update product");
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
 
-  // Loading State
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <Loader2 className="h-10 w-10 animate-spin text-indigo-600" />
-        <p className="mt-4 text-gray-600">Loading product details...</p>
-      </div>
-    );
-  }
-
-  // Error State
-  if (error) {
-    return (
-      <div className="max-w-2xl mx-auto bg-red-50 border border-red-200 text-red-700 px-6 py-8 rounded-xl">
-        <h2 className="text-2xl font-bold mb-4">Error Loading Product</h2>
-        <p className="mb-6">{error}</p>
-        <Link
-          href="/dashboard/manage-products"
-          className="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium"
-        >
-          <ArrowLeft className="h-5 w-5 mr-2" />
-          Back to Product List
-        </Link>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="text-center">
+          <Loader2 className="w-20 h-20 animate-spin text-red-600" />
+          <p className="mt-6 text-2xl font-bold text-gray-700">
+            Loading product...
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <Link
-        href="/dashboard/manage-products"
-        className="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium mb-6"
-      >
-        <ArrowLeft className="h-5 w-5 mr-2" />
-        Back to Product List
-      </Link>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-10 px-4">
+      <div className="max-w-5xl mx-auto">
+        {/* Back Button */}
+        <Link
+          href="/dashboard/manage-products"
+          className="inline-flex items-center text-red-600 hover:text-red-700 font-bold text-lg mb-6"
+        >
+          <ArrowLeft className="w-6 h-6 mr-2" /> Back to Products
+        </Link>
 
-      <h1 className="text-3xl font-extrabold text-gray-900 mb-8 border-b pb-4">
-        Edit Product:{" "}
-        <span className="text-indigo-600">
-          {formData.title || "Loading..."}
-        </span>
-      </h1>
+        <h1 className="text-5xl font-black text-gray-900 flex items-center gap-4 mb-10">
+          <Package className="w-14 h-14 text-purple-600" />
+          Edit Product
+        </h1>
 
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-8 bg-white p-8 rounded-2xl shadow-lg border"
-      >
-        {formData.imageUrl && (
-          <div className="mb-8">
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
-              Current Image
-            </label>
-            <img
-              src={formData.imageUrl}
-              alt="Product preview"
-              className="w-48 h-auto rounded-lg border shadow-md object-cover"
-            />
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-3xl shadow-2xl overflow-hidden"
+        >
+          {/* Image Preview */}
+          {imagePreview && (
+            <div className="relative">
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="w-full h-96 object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setImagePreview("");
+                  setFormData((prev) => ({ ...prev, thumbnail: "" }));
+                }}
+                className="absolute top-6 right-6 bg-red-600 text-white p-4 rounded-full hover:bg-red-700 shadow-2xl"
+              >
+                <X className="w-7 h-7" />
+              </button>
+            </div>
+          )}
+
+          <div className="p-8 lg:p-12 space-y-10">
+            {/* Product Details */}
+            <section>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                Product Details
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Input
+                  label="Title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  required
+                />
+                <Input
+                  label="Brand"
+                  name="brand"
+                  value={formData.brand}
+                  onChange={handleChange}
+                />
+                <Input
+                  label="Category"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  required
+                />
+                <Input
+                  label="Tags (comma separated)"
+                  name="tags"
+                  value={formData.tags}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="mt-6">
+                <label className="block text-gray-700 font-semibold mb-3">
+                  Description
+                </label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  rows="6"
+                  className="w-full px-6 py-5 border border-gray-300 rounded-2xl focus:ring-4 focus:ring-red-200 focus:border-red-500 transition text-lg"
+                  placeholder="Write a detailed description..."
+                />
+              </div>
+            </section>
+
+            {/* Pricing & Stock */}
+            <section className="bg-gradient-to-r from-red-50 to-pink-50 p-8 rounded-3xl">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                Pricing & Inventory
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Input
+                  label="Price (৳)"
+                  name="price"
+                  type="number"
+                  step="0.01"
+                  value={formData.price}
+                  onChange={handleChange}
+                  required
+                />
+                <Input
+                  label="Discount (%)"
+                  name="discountPercentage"
+                  type="number"
+                  min="0"
+                  max="90"
+                  value={formData.discountPercentage}
+                  onChange={handleChange}
+                />
+                <Input
+                  label="Stock"
+                  name="stock"
+                  type="number"
+                  value={formData.stock}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </section>
+
+            {/* Image */}
+            <section>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                <Upload className="w-8 h-8 text-purple-600" /> Product Image
+              </h2>
+              <Input
+                label="Image URL"
+                name="thumbnail"
+                value={formData.thumbnail}
+                onChange={handleChange}
+                placeholder="https://example.com/image.jpg"
+                required
+              />
+              <p className="text-sm text-gray-500 mt-2">
+                Use imgbb.com or Cloudinary
+              </p>
+            </section>
+
+            {/* Submit */}
+            <div className="flex justify-end pt-8 border-t">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-14 py-6 rounded-2xl font-bold text-xl hover:shadow-2xl transform hover:scale-105 transition disabled:opacity-70 flex items-center gap-4"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-8 h-8 animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-8 h-8" />
+                    Update Product
+                  </>
+                )}
+              </button>
+            </div>
           </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Title
-            </label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Price (৳)
-            </label>
-            <input
-              type="number"
-              name="price"
-              value={formData.price}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Short Description
-          </label>
-          <textarea
-            name="shortDescription"
-            rows="3"
-            value={formData.shortDescription}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Full Description
-          </label>
-          <textarea
-            name="fullDescription"
-            rows="6"
-            value={formData.fullDescription}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Priority
-            </label>
-            <select
-              name="priority"
-              value={formData.priority}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Image URL
-            </label>
-            <input
-              type="url"
-              name="imageUrl"
-              value={formData.imageUrl}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-        </div>
-
-        <div className="pt-6 border-t">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="inline-flex items-center px-8 py-4 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:bg-indigo-400 transition shadow-md"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="h-5 w-5 mr-3 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="h-5 w-5 mr-3" />
-                Save Changes
-              </>
-            )}
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 };
+
+const Input = ({ label, ...props }) => (
+  <label className="block">
+    <span className="text-gray-700 font-semibold mb-2 block">{label}</span>
+    <input
+      className="w-full px-6 py-5 border border-gray-300 rounded-2xl focus:ring-4 focus:ring-purple-200 focus:border-purple-500 transition text-lg"
+      {...props}
+    />
+  </label>
+);
 
 export default ProductUpdateForm;

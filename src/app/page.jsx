@@ -11,12 +11,14 @@ import Features from "@/Components/Features/Features";
 import Testimonials from "@/Components/Testimonials/Testimonials";
 import BrandSlider from "@/Components/Ui/BrandSlider/BrandSlider";
 
+
+
 export const revalidate = 60;
 
 export default async function HomePage() {
   let products = [];
   try {
-    const data = await getProducts({ limit: 200 });
+    const data = await getProducts({ limit: 9999 });
     products = data?.products || [];
   } catch (err) {
     console.error("Failed to load products:", err);
@@ -60,8 +62,8 @@ export default async function HomePage() {
       </section>
 
       {/* Brands */}
-        <h1 className="text-5xl font-extrabold text-center mb-10">Trusted Brands</h1>
-      <div className="my-10 p-12">
+        <h1 className="text-3xl md:text-5xl font-extrabold text-center mb-10">Trusted Brands</h1>
+      <div className="my-10 p-6 md:p-12">
         <BrandSlider />
       </div>
 
@@ -99,7 +101,7 @@ export default async function HomePage() {
           <div className="flex mt-8 justify-center items-center ">
             <Link href="/products">
               <button className=" bg-black text-white outline-1 outline-orange-600 hover:bg-red-700  px-8 py-5 rounded-2xl text-xl font-bold flex items-center gap-3 shadow-2xl hover:scale-105 transition">
-                All Categories <ChevronRight size={32} />
+                See All <ChevronRight size={32} />
               </button>
             </Link>
           </div>

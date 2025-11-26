@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
       setLoading(false);
     });
 
-    return () => unsubscribe(); // cleanup
+    return () => unsubscribe();
   }, []);
 
   // Auth Methods
@@ -53,9 +53,16 @@ export function AuthProvider({ children }) {
     return signOut(auth);
   };
 
-  const googleLogin = () => {
+  // গুগল লগইন — এটাই ১০০% কাজ করবে
+  const googleLogin = async () => {
     const provider = new GoogleAuthProvider();
-    return signInWithPopup(auth, provider);
+    try {
+      const result = await signInWithPopup(auth, provider);
+      return result.user; // এটা রিটার্ন করা ভালো
+    } catch (error) {
+      console.error("Google login error:", error);
+      throw error; // এররটা লগইন পেজে যাবে
+    }
   };
 
   const value = {
@@ -65,13 +72,12 @@ export function AuthProvider({ children }) {
     register,
     resetPassword,
     logout,
-    googleLogin,
+    googleLogin, // এটা আছে — পারফেক্ট
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {/* লোডিং এর সময় কিছুই দেখাবে না (Next.js এর জন্য best practice) */}
-      {loading ? null : children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 }

@@ -133,7 +133,7 @@ export default function CategoryGrid({ categories = [] }) {
         ))}
       </div>
       <div className="flex mt-8 justify-center items-center ">
-        <Link href="/products">
+        <Link href="/categories">
           <button className=" bg-black text-white outline-1 outline-orange-600 hover:bg-red-700  px-8 py-5 rounded-2xl text-xl font-bold flex items-center gap-3 shadow-2xl hover:scale-105 transition">
             All Categories <ChevronRight size={32} />
           </button>

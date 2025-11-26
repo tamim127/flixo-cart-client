@@ -7,110 +7,157 @@ import {
   Save,
   Loader2,
   ArrowLeft,
-  Package,
-  Edit,
   PlusCircle,
+  Edit,
+  Upload,
+  X,
+  Package,
 } from "lucide-react";
-import { getProductById, createProduct, updateProduct } from "@/lib/api";
+import toast from "react-hot-toast";
 import { useAuth } from "@/Context/AuthContext";
-// Auth context for protection
+import { createProduct, updateProduct, getProductById } from "@/lib/api";
 
-// Initial State based on your JSON structure (minimal fields required for a form)
+// Initial form structure
 const initialFormData = {
   title: "",
   description: "",
   category: "",
-  price: 0,
+  price: "",
   discountPercentage: 0,
-  stock: 1,
+  stock: "",
   brand: "",
-  thumbnail: "", // The imageUrl source
+  thumbnail: "",
+  tags: "",
 };
+
+// Reusable input field
+const InputField = ({
+  label,
+  name,
+  value,
+  onChange,
+  required = false,
+  type = "text",
+}) => (
+  <div className="flex flex-col">
+    <label className="font-semibold text-gray-700 mb-2">
+      {label} {required && <span className="text-red-600">*</span>}
+    </label>
+    <input
+      type={type}
+      name={name}
+      value={value}
+      onChange={onChange}
+      required={required}
+      className="rounded-xl border border-gray-300 px-5 py-3 focus:outline-none focus:ring-2 focus:ring-red-400 text-lg shadow-sm"
+    />
+  </div>
+);
 
 const ProductForm = ({ productId = null }) => {
   const isEditing = !!productId;
   const router = useRouter();
   const { currentUser, loading: authLoading } = useAuth();
 
-  // --- State Declarations ---
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(isEditing);
-  const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imagePreview, setImagePreview] = useState("");
 
-  // --- Authentication Check ---
+  // Redirect if not logged in
   useEffect(() => {
     if (!authLoading && !currentUser) {
-      // Unauthenticated users redirected to login
+      toast.error("Please login to continue");
       router.push("/login");
     }
   }, [currentUser, authLoading, router]);
 
-  // --- R: Load Data for Editing (GET /products/:id) ---
-  const fetchProductData = useCallback(async () => {
-    if (!isEditing || !currentUser) return; // Only fetch if editing and authenticated
-
+  // Fetch product for editing
+  const fetchProduct = useCallback(async () => {
+    if (!isEditing || !currentUser?.uid) return;
     setLoading(true);
-    setError(null);
     try {
-      // Note: getProductById returns the processed product, but we need raw data for the form
-      const rawData = await getProductById(productId);
-
-      // Map the processed data back to the raw form state (optional: use raw data if possible)
+      const product = await getProductById(productId);
+      if (product.sellerId && product.sellerId !== currentUser.uid) {
+        toast.error("You can only edit your own products!");
+        router.push("/dashboard/manage-products");
+        return;
+      }
       setFormData({
-        title: rawData.title || "",
-        description: rawData.description || "",
-        category: rawData.category || "",
-        price: rawData.price || 0,
-        discountPercentage: rawData.discountPercentage || 0,
-        stock: rawData.stock || 1,
-        brand: rawData.brand || "",
-        thumbnail: rawData.thumbnail || "",
+        title: product.title || "",
+        description: product.description || "",
+        category: product.category || "",
+        price: product.price || "",
+        discountPercentage: product.discountPercentage || 0,
+        stock: product.stock || "",
+        brand: product.brand || "",
+        thumbnail: product.thumbnail || product.images?.[0] || "",
+        tags: Array.isArray(product.tags) ? product.tags.join(", ") : "",
       });
+      setImagePreview(product.thumbnail || product.images?.[0] || "");
     } catch (err) {
-      setError(`Failed to load product details: ${err.message}`);
+      toast.error(err.message || "Product not found");
+      router.push("/dashboard/manage-products");
     } finally {
       setLoading(false);
     }
-  }, [isEditing, productId, currentUser]);
+  }, [isEditing, productId, currentUser?.uid, router]);
 
   useEffect(() => {
-    if (currentUser) {
-      fetchProductData();
-    }
-  }, [fetchProductData, currentUser]);
+    if (currentUser?.uid) fetchProduct();
+  }, [fetchProduct, currentUser?.uid]);
 
-  // --- Input Handlers ---
+  // Handle input changes
   const handleChange = (e) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "number" ? parseFloat(value) : value,
-    }));
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "thumbnail") setImagePreview(value.trim());
   };
 
-  // --- C/U: Handle Submission (POST/PUT /products) ---
+  // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
+    if (!currentUser?.uid) return;
 
-    // Remove _id from data before sending to backend (if present)
-    const { _id, originalPrice, imageUrl, ...dataToSend } = formData;
+    if (
+      !formData.title ||
+      !formData.price ||
+      !formData.stock ||
+      !formData.thumbnail
+    ) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+
+    setIsSubmitting(true);
+    const payload = {
+      title: formData.title.trim(),
+      description: formData.description.trim(),
+      category: formData.category.trim(),
+      price: parseFloat(formData.price),
+      discountPercentage: parseFloat(formData.discountPercentage) || 0,
+      stock: parseInt(formData.stock),
+      brand: formData.brand.trim(),
+      thumbnail: formData.thumbnail.trim(),
+      images: [formData.thumbnail.trim()],
+      tags: formData.tags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean),
+    };
 
     try {
-      if (isEditing) {
-        await updateProduct(productId, dataToSend);
-        alert("Product updated successfully!");
-      } else {
-        await createProduct(dataToSend);
-        alert("Product added successfully!");
-        setFormData(initialFormData); // Reset form for new addition
-      }
-      // Redirect after successful operation
+      if (isEditing) await updateProduct(productId, payload, currentUser.uid);
+      else await createProduct(payload, currentUser.uid);
+
+      toast.success(
+        isEditing
+          ? "Product updated successfully!"
+          : "Product added successfully!"
+      );
       router.push("/dashboard/manage-products");
-    } catch (error) {
-      setError(`Submission failed: ${error.message}`);
+    } catch (err) {
+      toast.error(err.message || "Failed to save product");
     } finally {
       setIsSubmitting(false);
     }
@@ -118,205 +165,157 @@ const ProductForm = ({ productId = null }) => {
 
   if (authLoading || loading) {
     return (
-      <div className="text-center py-20">
-        <Loader2 className="h-10 w-10 animate-spin text-indigo-600 mx-auto" />
-        <p className="mt-4 text-xl text-gray-600">
-          {isEditing ? "Loading product data..." : "Authenticating..."}
-        </p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-pink-50">
+        <Loader2 className="w-20 h-20 animate-spin text-red-600" />
       </div>
     );
   }
 
-  if (!currentUser) {
-    return null; // Should be redirected by useEffect
-  }
-
   return (
-    <div className="p-8 bg-white min-h-screen">
-      <header className="border-b pb-5 mb-8">
-        <Link
-          href="/dashboard/manage-products"
-          className="text-indigo-600 hover:text-indigo-800 flex items-center mb-4"
-        >
-          <ArrowLeft className="w-5 h-5 mr-2" />
-          Back to Product List
-        </Link>
-        <h1 className="text-4xl font-extrabold text-gray-900 flex items-center gap-3">
-          {isEditing ? (
-            <Edit className="w-8 h-8 text-indigo-600" />
-          ) : (
-            <PlusCircle className="w-8 h-8 text-indigo-600" />
-          )}
-          {isEditing ? `Edit Product: ${formData.title}` : "Add New Product"}
-        </h1>
-      </header>
-
-      {error && (
-        <div
-          className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg"
-          role="alert"
-        >
-          {error}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
-        {/* Basic Details Section */}
-        <div className="bg-gray-50 p-6 rounded-lg shadow-inner">
-          <h2 className="text-2xl font-bold mb-4 text-indigo-700">
-            Product Details
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Title */}
-            <label className="block">
-              <span className="text-gray-700 font-semibold">Title</span>
-              <input
-                type="text"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full p-3 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </label>
-            {/* Category */}
-            <label className="block">
-              <span className="text-gray-700 font-semibold">Category</span>
-              <input
-                type="text"
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full p-3 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </label>
-          </div>
-
-          {/* Description */}
-          <label className="block mt-6">
-            <span className="text-gray-700 font-semibold">Description</span>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows="4"
-              className="mt-1 block w-full p-3 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </label>
-        </div>
-
-        {/* Pricing & Stock Section */}
-        <div className="bg-gray-50 p-6 rounded-lg shadow-inner">
-          <h2 className="text-2xl font-bold mb-4 text-indigo-700">
-            Pricing & Inventory
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Price */}
-            <label className="block">
-              <span className="text-gray-700 font-semibold">
-                Current Price (৳)
-              </span>
-              <input
-                type="number"
-                name="price"
-                value={formData.price || ""}
-                onChange={handleChange}
-                required
-                min="0"
-                step="0.01"
-                className="mt-1 block w-full p-3 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </label>
-            {/* Discount Percentage */}
-            <label className="block">
-              <span className="text-gray-700 font-semibold">Discount (%)</span>
-              <input
-                type="number"
-                name="discountPercentage"
-                value={formData.discountPercentage}
-                onChange={handleChange}
-                required
-                min="0"
-                max="100"
-                step="0.1"
-                className="mt-1 block w-full p-3 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </label>
-            {/* Stock */}
-            <label className="block">
-              <span className="text-gray-700 font-semibold">
-                Stock Quantity
-              </span>
-              <input
-                type="number"
-                name="stock"
-                value={formData.stock}
-                onChange={handleChange}
-                required
-                min="0"
-                className="mt-1 block w-full p-3 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </label>
-          </div>
-        </div>
-
-        {/* Media Section */}
-        <div className="bg-gray-50 p-6 rounded-lg shadow-inner">
-          <h2 className="text-2xl font-bold mb-4 text-indigo-700">
-            Media & Brand
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Brand */}
-            <label className="block">
-              <span className="text-gray-700 font-semibold">Brand</span>
-              <input
-                type="text"
-                name="brand"
-                value={formData.brand}
-                onChange={handleChange}
-                className="mt-1 block w-full p-3 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </label>
-            {/* Thumbnail URL */}
-            <label className="block">
-              <span className="text-gray-700 font-semibold">Thumbnail URL</span>
-              <input
-                type="text"
-                name="thumbnail"
-                value={formData.thumbnail}
-                onChange={handleChange}
-                className="mt-1 block w-full p-3 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </label>
-          </div>
-          {/* Optional: Add image preview here if time permits */}
-        </div>
-
-        {/* Submit Button */}
-        <div className="pt-6 border-t mt-8">
-          <button
-            type="submit"
-            disabled={isSubmitting || loading}
-            className="flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 px-10 rounded-lg shadow-md transition disabled:opacity-50"
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pink-50 py-12 px-4">
+      <div className="max-w-5xl mx-auto">
+        <div className="mb-10">
+          <Link
+            href="/dashboard/manage-products"
+            className="inline-flex items-center text-red-600 hover:text-red-700 font-bold text-lg mb-6 hover:underline"
           >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-                {isEditing ? "Saving Changes..." : "Adding Product..."}
-              </>
+            <ArrowLeft className="w-6 h-6 mr-2" /> Back to Products
+          </Link>
+          <h1 className="text-5xl md:text-6xl font-black text-gray-900 flex items-center gap-5">
+            {isEditing ? (
+              <Edit className="w-14 h-14 text-purple-600" />
             ) : (
-              <>
-                <Save className="w-5 h-5 mr-3" />
-                {isEditing ? "Update Product" : "Add Product"}
-              </>
+              <PlusCircle className="w-14 h-14 text-red-600" />
             )}
-          </button>
+            {isEditing ? "Edit Product" : "Add New Product"}
+          </h1>
         </div>
-      </form>
+
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-3xl shadow-2xl overflow-hidden"
+        >
+          {/* Image Preview */}
+          {imagePreview && (
+            <div className="relative">
+              <img
+                src={imagePreview}
+                alt="Product Preview"
+                className="w-full h-96 object-cover"
+                onError={() => setImagePreview("")}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setImagePreview("");
+                  setFormData((prev) => ({ ...prev, thumbnail: "" }));
+                }}
+                className="absolute top-6 right-6 bg-red-600 text-white p-4 rounded-full hover:bg-red-700 shadow-2xl transition"
+              >
+                <X className="w-7 h-7" />
+              </button>
+            </div>
+          )}
+
+          <div className="p-8 lg:p-14 space-y-12">
+            {/* Product Info */}
+            <section>
+              <h2 className="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-4">
+                <Package className="w-10 h-10 text-red-600" /> Product
+                Information
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <InputField
+                  label="Product Title *"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  required
+                />
+                <InputField
+                  label="Brand"
+                  name="brand"
+                  value={formData.brand}
+                  onChange={handleChange}
+                />
+                <InputField
+                  label="Category *"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  required
+                />
+                <InputField
+                  label="Stock *"
+                  name="stock"
+                  value={formData.stock}
+                  onChange={handleChange}
+                  required
+                  type="number"
+                />
+                <InputField
+                  label="Price *"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  required
+                  type="number"
+                />
+                <InputField
+                  label="Discount (%)"
+                  name="discountPercentage"
+                  value={formData.discountPercentage}
+                  onChange={handleChange}
+                  type="number"
+                />
+                <InputField
+                  label="Thumbnail URL *"
+                  name="thumbnail"
+                  value={formData.thumbnail}
+                  onChange={handleChange}
+                  required
+                />
+                <InputField
+                  label="Tags (comma separated)"
+                  name="tags"
+                  value={formData.tags}
+                  onChange={handleChange}
+                />
+              </div>
+            </section>
+
+            {/* Description */}
+            <section>
+              <label className="font-semibold text-gray-700 mb-2 block">
+                Description
+              </label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                rows={6}
+                className="w-full rounded-xl border border-gray-300 px-5 py-3 focus:outline-none focus:ring-2 focus:ring-red-400 text-lg shadow-sm"
+              />
+            </section>
+
+            {/* Submit */}
+            <section className="flex justify-end">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-red-600 hover:bg-red-700 text-white px-10 py-5 rounded-2xl text-xl font-bold shadow-xl flex items-center gap-3 disabled:opacity-70"
+              >
+                {isSubmitting ? (
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                ) : (
+                  <Save className="w-6 h-6" />
+                )}
+                {isEditing ? "Update Product" : "Add Product"}
+              </button>
+            </section>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

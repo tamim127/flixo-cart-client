@@ -22,7 +22,7 @@ const slides = [
     title: "NEW SEASON ARRIVALS",
     highlight: "FRESH DROPS",
     desc: "Latest fashion, electronics & home essentials",
-    img: "https://images.unsplash.com/photo-1441986300917-64672809604f?w=1920&h=1080&fit=crop",
+    img: "https://images.unsplash.com/photo-1611403570720-162d8829689a?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzF8fHNhbGVzfGVufDB8fDB8fHww?w=1920&h=1080&fit=crop",
   },
   {
     title: "FREE SHIPPING NATIONWIDE",
@@ -34,7 +34,7 @@ const slides = [
     title: "ELECTRONICS BLOWOUT",
     highlight: "UP TO 70% OFF",
     desc: "Phones, laptops, gadgets – Best prices guaranteed",
-    img: "https://images.unsplash.com/photo-1519389950477-381777c5f379?w=1920&h=1080&fit=crop",
+    img: "https://plus.unsplash.com/premium_photo-1673429738836-b3581b1b6636?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjA5fHxzaG9wfGVufDB8fDB8fHww?w=1920&h=1080&fit=crop",
   },
   {
     title: "FASHION FRENZY",
