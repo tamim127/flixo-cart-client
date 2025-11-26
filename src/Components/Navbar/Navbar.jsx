@@ -15,8 +15,9 @@ import {
   Package,
   LogOut,
 } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/Context/AuthContext";
 import { useCart } from "@/Context/CartContext";
+
 
 export default function Navbar() {
   const { currentUser, logout } = useAuth();

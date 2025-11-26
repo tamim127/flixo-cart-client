@@ -2,9 +2,10 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
-import { useAuth } from "./AuthContext";
+
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { useAuth } from "./AuthContext";
 
 const CartContext = createContext();
 
