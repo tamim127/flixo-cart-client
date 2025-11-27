@@ -1,4 +1,4 @@
-// components/HeroCarousel/HeroCarousel.jsx
+
 "use client";
 
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -7,7 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
-// এই লাইনগুলো যদি layout বা globals.css এ না থাকে তাহলে এখানে রাখ
+
 import "swiper/css";
 import "swiper/css/autoplay";
 

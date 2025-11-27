@@ -44,7 +44,7 @@ export default function CheckoutContent() {
 
     setLoading(true);
     try {
-      // এখানে পরে API কল করবে
+    
       toast.success(
         "Order placed successfully! Thank you for shopping with us."
       );

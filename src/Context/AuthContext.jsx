@@ -1,4 +1,4 @@
-// src/context/AuthContext.jsx
+
 "use client";
 
 import {
@@ -53,15 +53,15 @@ export function AuthProvider({ children }) {
     return signOut(auth);
   };
 
-  // গুগল লগইন — এটাই ১০০% কাজ করবে
+ 
   const googleLogin = async () => {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      return result.user; // এটা রিটার্ন করা ভালো
+      return result.user;
     } catch (error) {
       console.error("Google login error:", error);
-      throw error; // এররটা লগইন পেজে যাবে
+      throw error; 
     }
   };
 
@@ -72,7 +72,7 @@ export function AuthProvider({ children }) {
     register,
     resetPassword,
     logout,
-    googleLogin, // এটা আছে — পারফেক্ট
+    googleLogin, 
   };
 
   return (

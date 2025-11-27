@@ -1,4 +1,4 @@
-// app/products/[id]/page.js
+
 import ProductClient from "./ProductClient";
 import { notFound } from "next/navigation";
 
@@ -12,7 +12,7 @@ async function getProduct(id) {
   return res.json();
 }
 
-// এখানে await করা লাগবে
+
 export async function generateMetadata({ params }) {
   const { id } = await params; // এখানে await
   if (!id) return { title: "Product Not Found" };
@@ -27,7 +27,7 @@ export async function generateMetadata({ params }) {
   };
 }
 
-// এখানেও await করা লাগবে
+
 export default async function ProductDetailPage({ params }) {
   const { id } = await params; // এখানে await
   if (!id) notFound();

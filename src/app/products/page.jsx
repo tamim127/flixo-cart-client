@@ -1,4 +1,4 @@
-  "use client"; // এটা সবসময় উপরে রাখতে হবে
+  "use client"; 
 
   import Image from "next/image";
   import Link from "next/link";

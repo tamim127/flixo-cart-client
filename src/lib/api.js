@@ -1,9 +1,9 @@
-// lib/api.js
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ;
 
 // -------------------------
 // Utility Functions
-// -------------------------
+
 
 // Calculate original price from discount
 function calculateOriginalPrice(price, discountPercentage) {
@@ -27,7 +27,7 @@ function processProduct(product) {
 }
 
 // -------------------------
-// 1️⃣ Get All Products
+//  Get All Products
 // -------------------------
 export async function getProducts({ limit = 24, skip = 0 } = {}) {
     const res = await fetch(`${API_BASE_URL}/products?limit=${limit}&skip=${skip}`, { cache: "no-store" });
@@ -46,7 +46,7 @@ export async function getProducts({ limit = 24, skip = 0 } = {}) {
 }
 
 // -------------------------
-// 2️⃣ Get My Products (Pagination Ready)
+//  Get My Products (Pagination Ready)
 // -------------------------
 export async function getMyProducts(sellerId, page = 1, limit = 12) {
     if (!sellerId) throw new Error("Seller ID required");
@@ -70,7 +70,7 @@ export async function getMyProducts(sellerId, page = 1, limit = 12) {
 }
 
 // -------------------------
-// 3️⃣ Get Single Product
+//  Get Single Product
 // -------------------------
 export async function getProductById(id) {
     if (!id) throw new Error("Product ID required");
@@ -83,7 +83,7 @@ export async function getProductById(id) {
 }
 
 // -------------------------
-// 4️⃣ CRUD Operations
+//  CRUD Operations
 // -------------------------
 export async function createProduct(productData, sellerId) {
     const payload = { ...productData, sellerId, createdAt: new Date(), updatedAt: new Date() };
@@ -124,7 +124,7 @@ export async function deleteProduct(id) {
 }
 
 // -------------------------
-// 5️⃣ Categories
+//  Categories
 // -------------------------
 export async function getCategories() {
     const res = await fetch(`${API_BASE_URL}/categories`, { cache: "no-store" });
@@ -135,7 +135,7 @@ export async function getCategories() {
 }
 
 // -------------------------
-// 6️⃣ Get Products by Category
+//  Get Products by Category
 // -------------------------
 export async function getProductsByCategory(category, { limit = 24, skip = 0 } = {}) {
     if (!category) return { products: [], total: 0 };
@@ -151,7 +151,7 @@ export async function getProductsByCategory(category, { limit = 24, skip = 0 } =
 }
 
 // -------------------------
-// 7️⃣ Search Products
+//  Search Products
 // -------------------------
 export async function searchProducts(query) {
     if (!query) return [];
@@ -167,7 +167,7 @@ export async function searchProducts(query) {
 }
 
 // -------------------------
-// 8️⃣ Filter Products
+//  Filter Products
 // -------------------------
 export async function getProductsByPrice(minPrice = 0, maxPrice = 999999) {
     const res = await fetch(`${API_BASE_URL}/products/filter?minPrice=${minPrice}&maxPrice=${maxPrice}`, { cache: "no-store" });

@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { getProducts } from "@/lib/api";
 
-// slug বানানোর ফাংশন – TypeScript সরানো হয়েছে
+// 
 function createSlug(name) {
   if (!name) return "uncategorized";
   return name
     .toLowerCase()
-    .replace(/\s+/g, "-") // space → -
-    .replace(/[^\w\-]+/g, "") // special char remove
-    .replace(/\-\-+/g, "-") // multiple - → single
+    .replace(/\s+/g, "-") -
+    .replace(/[^\w\-]+/g, "") 
+    .replace(/\-\-+/g, "-") 
     .trim();
 }
 

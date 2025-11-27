@@ -26,7 +26,7 @@ export default function ContactPage() {
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500)); // simulate API
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     console.log("Form Data:", data);
     toast.success("Thank you! Your message has been sent successfully!");
     reset();

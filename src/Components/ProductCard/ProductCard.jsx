@@ -1,4 +1,4 @@
-// components/ProductCard/ProductCard.jsx
+
 import Image from "next/image";
 import Link from "next/link";
 import { Star, ShoppingCart, ChevronRight } from "lucide-react";

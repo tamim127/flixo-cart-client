@@ -48,7 +48,7 @@ export default function ForgotPasswordPage() {
           Back to Login
         </button>
 
-        {/* লোগো + টাইটেল */}
+        {/* logo+ title */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-600 to-pink-600 rounded-3xl shadow-2xl mb-6">
             <Mail className="w-12 h-12 text-white" />
@@ -61,7 +61,7 @@ export default function ForgotPasswordPage() {
           </p>
         </div>
 
-        {/* মেইন কার্ড */}
+        {/*Main card */}
         <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/50">
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl text-center font-medium">

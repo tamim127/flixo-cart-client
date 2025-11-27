@@ -5,8 +5,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ==================== BEST PRACTICES 2025 ==================== */
-
 /* 1. Smooth scrolling */
 html {
   scroll-behavior: smooth;
@@ -38,7 +36,9 @@ html {
 
 /* 4. Reduce motion for users who prefer */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -46,14 +46,14 @@ html {
   }
 }
 
-/* 5. Container utility (যাতে সব জায়গায় একই padding থাকে) */
+/* 5. Container utility  */
 @layer components {
   .container-max {
     @apply max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8;
   }
 }
 
-/* 6. Text balance (modern typography) */
+/* 6. Text balance  */
 @layer utilities {
   .text-balance {
     text-wrap: balance;

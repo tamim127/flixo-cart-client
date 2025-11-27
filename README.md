@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+#  FLIXO CART
 
-## Getting Started
+A modern, responsive e-commerce web application built with **Next.js (App Router)**  
+This project demonstrates a polished UI, protected pages with authentication, and a simple Express.js backend for product management.
 
-First, run the development server:
+---
+
+## 🌐 Live Demo
+
+  https://filxo-cart.vercel.app/
+
+---
+
+## 🛠 Technologies Used
+
+- **Frontend:** Next.js (App Router), React, Tailwind CSS, Framer Motion  
+- **Authentication:** firebase  
+- **Backend:** Express.js (Simple API for product management)  
+- **Forms & Validation:** react-hook-form, react-hot-toast  
+- **Icons:** lucide-react  
+- **Deployment:** Vercel  
+
+---
+
+## 📌 Features
+
+### Landing Page
+- Sticky, responsive Navbar with logo, routes, and login/register  
+- Hero section with headline, subtitle, and primary CTA  
+- 4 thematic sections:
+  - About Us  
+  - Trust & Features  
+  - Mission & Vision  
+  - Final Call-to-Action  
+- Uniform cards with hover/focus states  
+- Footer with links, social icons, and copyright  
+
+### Authentication
+- Login/Register using Google OAuth or credentials  
+- Protected routes for logged-in users  
+- Redirects after login/logout  
+
+### Product Management
+- **Item List Page:** Grid of products with images, title, short description, price, and details button  
+- **Item Details Page:** Large image/banner, full description, meta info, and back navigation  
+- **Add Product (Protected):** Accessible only for logged-in users, with toast notification on success  
+- **Manage Products (Protected):** View, delete, and manage all products in a responsive table/grid  
+
+### Contact Page
+- Modern gradient hero section  
+- Contact info cards with hover animations  
+- Interactive contact form with validation and toast notifications  
+- Embedded Google Map and support hours card  
+
+---
+
+## 🔒 Protected Pages
+- `/add-product` → Add new products  
+- `/manage-products` → Manage existing products  
+- Users must be authenticated to access these pages  
+
+---
+Installation
+
+1. Clone the repository:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+git clone https://github.com/tamim127/flixo-cart-client.git
+cd flixo-cart-client
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. npm install
+3. npm run dev
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+⚙ Routes Summary
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Route              | Description                  | Access    |
+| ------------------ | ---------------------------- | --------- |
+| `/`                | Landing Page                 | Public    |
+| `/login`           | Login/Register Page          | Public    |
+| `/products`        | Item List Page               | Public    |
+| `/products/[id]`   | Product Details Page         | Public    |
+| `/add-product`     | Add Product (Form)           | Protected |
+| `/manage-products` | Manage Products (Table/Grid) | Protected |
+| `/contact`         | Contact Page with form & map | Public    |
 
-## Learn More
+# UI/UX Highlights
 
-To learn more about Next.js, take a look at the following resources:
+- Responsive design (mobile, tablet, desktop)
+- Consistent color palette, typography, spacing
+- Interactive hover/focus states
+- Modern gradients and glassmorphism elements
+- Framer Motion animations for smooth transitions
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Future Enhancements
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Full backend CRUD operations for products
+- Category filter & search functionality
+- User roles & permissions
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

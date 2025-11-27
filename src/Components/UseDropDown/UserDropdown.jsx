@@ -7,8 +7,7 @@ import { useAuth } from "@/Context/AuthContext";
 
 export default function UserDropdown({ user, mobile = false }) {
   const [open, setOpen] = useState(false);
-  const { logout } = useAuth(); // Firebase logout function from context
-
+  const { logout } = useAuth(); 
   return (
     <div className={`relative ${mobile ? "mt-2" : ""}`}>
       <button
@@ -33,7 +32,7 @@ export default function UserDropdown({ user, mobile = false }) {
             Manage Products
           </Link>
           <button
-            onClick={logout} // use logout from context
+            onClick={logout}
             className="px-4 py-2 text-red-600 hover:bg-gray-100 transition text-left"
           >
             Logout
