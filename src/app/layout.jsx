@@ -6,6 +6,8 @@ import { AuthProvider } from "@/Context/AuthContext";
 import { Toaster } from "react-hot-toast";
 import { Inter } from "next/font/google";
 import { CartProvider } from "@/Context/CartContext";
+import { WishlistProvider } from "@/Context/WishlistContext";
+import { UserProvider } from "@/Context/UserContext";
 
 // Best font for modern e-commerce
 const inter = Inter({
@@ -25,7 +27,7 @@ export const viewport = {
   initialScale: 1,
 };
 
-export const revalidate = 60; 
+export const revalidate = 60;
 
 export default function RootLayout({ children }) {
   return (
@@ -36,34 +38,38 @@ export default function RootLayout({ children }) {
       >
         <AuthProvider>
           <CartProvider>
-            {/* Sticky Navbar */}
-            <Navbar />
+            <WishlistProvider>
+              <UserProvider>
+                {/* Sticky Navbar */}
+                <Navbar />
 
-            {/* Toast Notifications */}
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 3000,
-                style: {
-                  background: "#1f2937",
-                  color: "#fff",
-                  fontWeight: "500",
-                },
-                success: {
-                  iconTheme: { primary: "#10b981", secondary: "#fff" },
-                },
-              }}
-            />
+                {/* Toast Notifications */}
+                <Toaster
+                  position="top-right"
+                  toastOptions={{
+                    duration: 3000,
+                    style: {
+                      background: "#1f2937",
+                      color: "#fff",
+                      fontWeight: "500",
+                    },
+                    success: {
+                      iconTheme: { primary: "#10b981", secondary: "#fff" },
+                    },
+                  }}
+                />
 
-            {/* Main Content - Full Width + Responsive Padding */}
-            <main className="min-h-screen pt-16 lg:pt-20  sm:px-6 lg:px-8">
-              <div className="max-w-[1920px] mx-auto  sm:px-6 lg:px-8">
-                {children}
-              </div>
-            </main>
+                {/* Main Content - Full Width + Responsive Padding */}
+                <main className="min-h-screen pt-16 lg:pt-20  sm:px-6 lg:px-8">
+                  <div className="max-w-[1920px] mx-auto  sm:px-6 lg:px-8">
+                    {children}
+                  </div>
+                </main>
 
-            {/* Footer */}
-            <Footer />
+                {/* Footer */}
+                <Footer />
+              </UserProvider>
+            </WishlistProvider>
           </CartProvider>
         </AuthProvider>
       </body>

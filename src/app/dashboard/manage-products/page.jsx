@@ -28,7 +28,6 @@ export default function ManageProducts() {
   const page = useRef(1);
   const limit = 12;
 
-  // Fetch Products
   const fetchProducts = useCallback(
     async (pageNum = 1, append = false) => {
       if (!currentUser?.uid) return;
@@ -66,7 +65,6 @@ export default function ManageProducts() {
     }
   }, [currentUser?.uid, fetchProducts]);
 
-  // Infinite Scroll
   const observer = useRef();
   const lastProductRef = useCallback(
     (node) => {
@@ -85,7 +83,6 @@ export default function ManageProducts() {
     [loadingMore, hasMore, fetchProducts, searchTerm]
   );
 
-  // Delete Product
   const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this product?")) return;
     setDeletingId(id);
@@ -119,7 +116,7 @@ export default function ManageProducts() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pink-50 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br rounded-2xl from-gray-50 via-white to-pink-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
@@ -192,7 +189,7 @@ export default function ManageProducts() {
                 ref={
                   index === filteredProducts.length - 1 ? lastProductRef : null
                 }
-                className="group bg-white rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3"
+                className="bg-white rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 relative"
               >
                 <div className="relative">
                   <Image
@@ -208,27 +205,25 @@ export default function ManageProducts() {
                     placeholder="blur"
                     blurDataURL="/placeholder.jpg"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition" />
-                  <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition transform translate-y-4 group-hover:translate-y-0">
-                    <div className="flex gap-3">
-                      <Link
-                        href={`/dashboard/manage-products/${product._id}`}
-                        className="bg-white text-gray-800 p-3 rounded-full shadow-lg hover:bg-gray-100"
-                      >
-                        <Edit className="w-5 h-5" />
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(product._id)}
-                        disabled={deletingId === product._id}
-                        className="bg-red-600 text-white p-3 rounded-full shadow-lg hover:bg-red-700 disabled:opacity-70"
-                      >
-                        {deletingId === product._id ? (
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-5 h-5" />
-                        )}
-                      </button>
-                    </div>
+                  {/* Always show buttons on mobile */}
+                  <div className="absolute bottom-3 left-3 flex gap-3">
+                    <Link
+                      href={`/dashboard/manage-products/${product._id}`}
+                      className="bg-white text-gray-800 p-3 rounded-full shadow-lg hover:bg-gray-100"
+                    >
+                      <Edit className="w-5 h-5" />
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(product._id)}
+                      disabled={deletingId === product._id}
+                      className="bg-red-600 text-white p-3 rounded-full shadow-lg hover:bg-red-700 disabled:opacity-70"
+                    >
+                      {deletingId === product._id ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-5 h-5" />
+                      )}
+                    </button>
                   </div>
                 </div>
                 <div className="p-6">
@@ -241,11 +236,11 @@ export default function ManageProducts() {
                   <div className="flex items-center justify-between mt-4">
                     <div>
                       <span className="text-3xl font-black text-gray-900">
-                        ৳{product.price.toLocaleString()}
+                        ${product.price.toLocaleString()}
                       </span>
                       {product.discountPercentage > 0 && (
                         <span className="block text-sm text-gray-500 line-through">
-                          ৳
+                          $
                           {product.originalPrice?.toLocaleString() ||
                             Math.round(
                               product.price /
@@ -281,4 +276,3 @@ export default function ManageProducts() {
     </div>
   );
 }
-  

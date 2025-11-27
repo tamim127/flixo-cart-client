@@ -29,7 +29,7 @@ export default function DashboardHome() {
     const loadProducts = async () => {
       try {
         setLoading(true);
-        const { products } = await getMyProducts(currentUser.uid, 1, 1000); // 1000 limit for all products
+        const { products } = await getMyProducts(currentUser.uid, 1, 1000);
         setProducts(products);
       } catch (err) {
         console.error("Failed to load products:", err);
@@ -43,13 +43,12 @@ export default function DashboardHome() {
     loadProducts();
   }, [currentUser?.uid]);
 
-  // Wait for auth
   if (authLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-pink-50">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
-          <Loader2 className="w-20 h-20 animate-spin text-red-600 mx-auto" />
-          <p className="mt-8 text-2xl font-bold text-gray-700">
+          <Loader2 className="w-16 h-16 animate-spin text-red-600 mx-auto" />
+          <p className="mt-6 text-xl font-semibold text-gray-700">
             Loading your store...
           </p>
         </div>
@@ -69,20 +68,22 @@ export default function DashboardHome() {
   );
 
   return (
-    <div className="space-y-12 pb-20">
+    <div className="space-y-10 pb-16">
       {/* Welcome */}
-      <div>
-        <h1 className="text-5xl font-black text-gray-900">
+      <div className="px-2 sm:px-0">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 leading-tight">
           Welcome back,{" "}
-          <span className="bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent animate-pulse">
+          <span className="bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">
             {userName}!
           </span>
         </h1>
-        <p className="text-xl text-gray-600 mt-3">Here's your store overview</p>
+        <p className="text-base sm:text-lg text-gray-600 mt-2">
+          Here's your store overview
+        </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      {/* Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
         <StatCard
           icon={Package}
           title="Your Products"
@@ -107,34 +108,38 @@ export default function DashboardHome() {
         <StatCard
           icon={DollarSign}
           title="Total Value"
-          value={`৳ ${totalValue.toLocaleString()}`}
+          value={`$ ${totalValue.toLocaleString()}`}
           color="from-green-500 to-emerald-500"
           gradient
         />
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 max-w-4xl mx-auto px-2 sm:px-0">
         <Link
           href="/dashboard/add-product"
-          className="group relative overflow-hidden bg-gradient-to-br from-red-600 to-pink-600 text-white rounded-3xl p-12 text-center hover:scale-105 transition-all duration-500 shadow-2xl"
+          className="group relative overflow-hidden bg-gradient-to-br from-red-600 to-pink-600 text-white rounded-2xl p-8 sm:p-12 text-center hover:scale-[1.02] transition-all duration-500 shadow-xl"
         >
           <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-          <PlusCircle className="w-20 h-20 mx-auto mb-6 relative z-10" />
-          <h3 className="text-3xl font-bold relative z-10">Add New Product</h3>
-          <p className="text-white/90 mt-3 text-lg relative z-10">
+          <PlusCircle className="w-14 sm:w-20 h-14 sm:h-20 mx-auto mb-4 sm:mb-6 relative z-10" />
+          <h3 className="text-xl sm:text-3xl font-bold relative z-10">
+            Add New Product
+          </h3>
+          <p className="text-white/90 mt-2 sm:mt-3 text-sm sm:text-lg relative z-10">
             Expand your inventory
           </p>
         </Link>
 
         <Link
           href="/dashboard/manage-products"
-          className="group relative overflow-hidden bg-gradient-to-br from-purple-600 to-indigo-600 text-white rounded-3xl p-12 text-center hover:scale-105 transition-all duration-500 shadow-2xl"
+          className="group relative overflow-hidden bg-gradient-to-br from-purple-600 to-indigo-600 text-white rounded-2xl p-8 sm:p-12 text-center hover:scale-[1.02] transition-all duration-500 shadow-xl"
         >
           <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-          <Package className="w-20 h-20 mx-auto mb-6 relative z-10" />
-          <h3 className="text-3xl font-bold relative z-10">Manage Products</h3>
-          <p className="text-white/90 mt-3 text-lg relative z-10">
+          <Package className="w-14 sm:w-20 h-14 sm:h-20 mx-auto mb-4 sm:mb-6 relative z-10" />
+          <h3 className="text-xl sm:text-3xl font-bold relative z-10">
+            Manage Products
+          </h3>
+          <p className="text-white/90 mt-2 sm:mt-3 text-sm sm:text-lg relative z-10">
             Edit, update or remove items
           </p>
         </Link>
@@ -142,11 +147,11 @@ export default function DashboardHome() {
 
       {/* Empty State */}
       {myAddedProducts.length === 0 && (
-        <div className="text-center py-16">
-          <p className="text-3xl font-bold text-gray-600">
+        <div className="text-center py-10 sm:py-16 px-2">
+          <p className="text-2xl sm:text-3xl font-bold text-gray-600">
             Your store is empty
           </p>
-          <p className="text-xl text-gray-500 mt-4">
+          <p className="text-base sm:text-xl text-gray-500 mt-2 sm:mt-4">
             Add your first product and start selling!
           </p>
         </div>
@@ -155,21 +160,28 @@ export default function DashboardHome() {
   );
 }
 
-// Stat Card Component
+// ================= STAT CARD =================
+
 function StatCard({ icon: Icon, title, value, color, gradient }) {
   return (
     <div
-      className={`bg-white rounded-3xl shadow-xl p-8 border hover:shadow-2xl transition-all duration-300 ${
-        gradient ? "hover:scale-105" : ""
+      className={`bg-white rounded-2xl shadow-md p-4 sm:p-6 lg:p-8 border hover:shadow-xl transition-all duration-300 ${
+        gradient ? "hover:scale-[1.02]" : ""
       }`}
     >
       <div
-        className={`p-4 rounded-2xl bg-gradient-to-br ${color} text-white w-fit shadow-lg`}
+        className={`p-3 sm:p-4 rounded-xl bg-gradient-to-br ${color} text-white w-fit shadow-lg`}
       >
-        <Icon className="w-12 h-12" />
+        <Icon className="w-8 h-8 sm:w-12 sm:h-12" />
       </div>
-      <p className="text-gray-600 mt-6 text-lg font-medium">{title}</p>
-      <p className="text-5xl font-black text-gray-900 mt-3">{value}</p>
+
+      <p className="text-gray-600 mt-4 sm:mt-6 text-sm sm:text-lg font-medium">
+        {title}
+      </p>
+
+      <p className="text-2xl sm:text-4xl lg:text-5xl font-black text-gray-900 mt-2 sm:mt-3">
+        {value}
+      </p>
     </div>
   );
 }

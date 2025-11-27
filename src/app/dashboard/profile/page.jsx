@@ -1,159 +1,115 @@
 "use client";
 
 import React from "react";
-import { User, Mail, Phone, MapPin, Save } from "lucide-react";
+import { User, Mail, Phone, MapPin, CalendarCheck } from "lucide-react";
+import { useUser } from "@/Context/UserContext";
 
+export default function UserProfile() {
+  const { user } = useUser();
 
-const userProfile = {
-  firstName: "Md. Hasibul",
-  lastName: "Islam",
-  email: "hasibul.islam@example.com",
-  phone: "01XXXXXXXXX",
-  defaultAddress: "House 12, Road 3, Dhanmondi, Dhaka",
-};
-
-const ProfileSettingsPage = () => {
- 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Profile data submitted!");
-    
-  };
+  if (!user) return <p className="text-center py-20">Loading profile...</p>;
 
   return (
-    <div>
-      <h2 className="text-3xl font-extrabold text-gray-900 flex items-center mb-6 border-b pb-4">
-        <User className="h-7 w-7 mr-3 text-indigo-600" />
-        Profile Settings
-      </h2>
+    <div className="min-h-screen bg-gray-50">
+      {/* Cover Photo */}
+      <div className="relative h-64 w-full bg-gray-200">
+        {user.coverPhoto ? (
+          <img
+            src={user.coverPhoto}
+            alt="Cover Photo"
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-400 font-bold">
+            No Cover Photo
+          </div>
+        )}
+      </div>
 
-      <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-        <form onSubmit={handleSubmit} className="space-y-6">
-         
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label
-                htmlFor="firstName"
-                className="block text-sm font-medium text-gray-700"
-              >
-                First Name
-              </label>
-              <div className="mt-1">
-                <input
-                  type="text"
-                  name="firstName"
-                  id="firstName"
-                  defaultValue={userProfile.firstName}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border"
-                  required
+      {/* Profile Avatar and Name */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="-mt-20 flex flex-col sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex items-center space-x-4 sm:space-x-6 relative">
+            <div className="w-36 h-36 sm:w-40 sm:h-40 rounded-full border-4 border-white overflow-hidden shadow-lg">
+              {user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.firstName + " " + user.lastName}
+                  className="w-full h-full object-cover"
                 />
-              </div>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-300 text-gray-600 font-bold text-3xl">
+                  {user?.firstName?.[0]}
+                  {user?.lastName?.[0]}
+                </div>
+              )}
             </div>
+            <div className="mt-4 sm:mt-0">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900">
+                {user?.displayName}
+              </h1>
+              {user.role && (
+                <p className="text-gray-500 text-sm sm:text-base mt-1">
+                  {user.role}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-4 sm:mt-0">
+            <button className="px-5 py-2 sm:px-6 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-full shadow transition">
+              Edit Profile
+            </button>
+          </div>
+        </div>
+
+        {/* Info Cards */}
+        <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Email */}
+          <div className="bg-white p-3 sm:p-6 rounded-xl shadow flex items-center space-x-4">
+            <Mail className="w-6 h-6 text-indigo-600 flex-shrink-0" />
             <div>
-              <label
-                htmlFor="lastName"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Last Name
-              </label>
-              <div className="mt-1">
-                <input
-                  type="text"
-                  name="lastName"
-                  id="lastName"
-                  defaultValue={userProfile.lastName}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border"
-                  required
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* (Email) */}
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700 flex items-center"
-            >
-              <Mail className="h-4 w-4 mr-2 text-gray-500" /> Email Address
-              (Cannot be changed)
-            </label>
-            <div className="mt-1">
-              <input
-                type="email"
-                name="email"
-                id="email"
-                defaultValue={userProfile.email}
-                readOnly
-                className="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm p-3 bg-gray-50 text-gray-500 border"
-              />
-            </div>
-          </div>
-
-          {/*  (Phone Number) */}
-          <div>
-            <label
-              htmlFor="phone"
-              className="block text-sm font-medium text-gray-700 flex items-center"
-            >
-              <Phone className="h-4 w-4 mr-2 text-gray-500" /> Phone Number
-            </label>
-            <div className="mt-1">
-              <input
-                type="tel"
-                name="phone"
-                id="phone"
-                defaultValue={userProfile.phone}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border"
-              />
-            </div>
-          </div>
-
-          {/* (Default Address - Read-only here) */}
-          <div>
-            <label
-              htmlFor="address"
-              className="block text-sm font-medium text-gray-700 flex items-center"
-            >
-              <MapPin className="h-4 w-4 mr-2 text-gray-500" /> Default Shipping
-              Address
-            </label>
-            <div className="mt-1">
-              <textarea
-                id="address"
-                name="address"
-                rows="3"
-                defaultValue={userProfile.defaultAddress}
-                readOnly
-                className="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm p-3 bg-gray-50 text-gray-500 border"
-              />
-              <p className="mt-2 text-xs text-gray-500">
-                To change the address, please go to the{" "}
-                <a
-                  href="/dashboard/addresses"
-                  className="text-indigo-600 hover:underline"
-                >
-                  Addresses
-                </a>{" "}
-                page.
+              <p className="text-gray-500 text-sm">Email</p>
+              <p className="text-gray-900 font-medium ">
+                {user.email}
               </p>
             </div>
           </div>
 
-          {/*  (Save Button) */}
-          <div className="pt-5 border-t mt-6">
-            <button
-              type="submit"
-              className="inline-flex justify-center items-center py-3 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150"
-            >
-              <Save className="h-5 w-5 mr-2" />
-              Save Changes
-            </button>
+          {/* Phone */}
+          <div className="bg-white p-5 sm:p-6 rounded-xl shadow flex items-center space-x-4">
+            <Phone className="w-6 h-6 text-green-600 flex-shrink-0" />
+            <div>
+              <p className="text-gray-500 text-sm">Phone</p>
+              <p className="text-gray-900 font-medium">
+                {user.phone || "Not Provided"}
+              </p>
+            </div>
           </div>
-        </form>
+
+          {/* Address */}
+          <div className="bg-white p-5 sm:p-6 rounded-xl shadow flex items-center space-x-4">
+            <MapPin className="w-6 h-6 text-red-600 flex-shrink-0" />
+            <div>
+              <p className="text-gray-500 text-sm">Address</p>
+              <p className="text-gray-900 font-medium break-words">
+                {user.defaultAddress || "Not Provided"}
+              </p>
+            </div>
+          </div>
+
+          {/* Joined */}
+          <div className="bg-white p-5 sm:p-6 rounded-xl shadow flex items-center space-x-4">
+            <CalendarCheck className="w-6 h-6 text-purple-600 flex-shrink-0" />
+            <div>
+              <p className="text-gray-500 text-sm">Joined</p>
+              <p className="text-gray-900 font-medium">
+                {user.joinedDate || "N/A"}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
-};
-
-export default ProfileSettingsPage;
+}

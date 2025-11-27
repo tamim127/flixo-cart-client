@@ -14,10 +14,13 @@ import {
   PlusCircle,
   Package,
   LogOut,
+  ChevronDown,
+  Settings,
+  Heart,
+  History,
 } from "lucide-react";
 import { useAuth } from "@/Context/AuthContext";
 import { useCart } from "@/Context/CartContext";
-
 
 export default function Navbar() {
   const { currentUser, logout } = useAuth();
@@ -35,7 +38,6 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Main Navbar */}
       <header className="fixed left-0 right-0 top-0 bg-white/95 backdrop-blur-md shadow-lg z-50 border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-20">
@@ -55,13 +57,13 @@ export default function Navbar() {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-8">
+            <nav className="hidden lg:flex items-center gap-10">
               {["Home", "Products", "Dashboard", "About", "Contact"].map(
                 (item) => (
                   <Link
                     key={item}
                     href={item === "Home" ? "/" : `/${item.toLowerCase()}`}
-                    className="text-gray-700 font-medium hover:text-red-600 transition relative group"
+                    className="text-gray-700 font-semibold hover:text-red-600 transition relative group text-base"
                   >
                     {item}
                     <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-red-600 group-hover:w-full transition-all duration-300" />
@@ -70,71 +72,104 @@ export default function Navbar() {
               )}
             </nav>
 
-            {/* Desktop Right Icons */}
-            <div className="hidden lg:flex items-center gap-4">
+            {/* Desktop Right Side */}
+            <div className="hidden lg:flex items-center gap-6">
+              {/* Search */}
               <button className="p-3 hover:bg-gray-100 rounded-full transition">
-                <Search size={22} />
+                <Search size={24} />
               </button>
 
+              {/* Cart */}
               <Link
                 href="/cart"
                 className="relative p-3 hover:bg-gray-100 rounded-full transition group"
               >
-                <ShoppingCart size={24} />
+                <ShoppingCart size={26} />
                 {totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center animate-pulse">
+                  <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center animate-pulse shadow-lg">
                     {totalItems}
                   </span>
                 )}
               </Link>
 
-              {/* User Dropdown */}
+              {/* User Dropdown - Hover + Click */}
               {currentUser ? (
                 <div className="relative group">
-                  <button className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-full transition">
-                    <div className="w-10 h-10 bg-gradient-to-br from-red-600 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                  <button className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-full transition-all duration-200">
+                    <div className="w-11 h-11 bg-gradient-to-br from-red-600 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
                       {currentUser.displayName?.[0] ||
                         currentUser.email[0].toUpperCase()}
                     </div>
-                    <span className="font-medium hidden xl:block">
-                      {currentUser.displayName ||
-                        currentUser.email.split("@")[0]}
-                    </span>
+                    <div className="text-left">
+                      <p className="text-sm font-semibold text-gray-800">
+                        {currentUser.displayName ||
+                          currentUser.email.split("@")[0]}
+                      </p>
+                      <p className="text-xs text-gray-500">My Account</p>
+                    </div>
+                    <ChevronDown className="w-4 h-4 text-gray-500 group-hover:rotate-180 transition-transform" />
                   </button>
 
-                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border overflow-hidden opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none group-hover:pointer-events-auto">
-                    <div className="p-4 border-b bg-gradient-to-r from-red-50 to-pink-50">
-                      <p className="font-bold text-gray-900">
-                        {currentUser.displayName || "Seller"}
+                  {/* Dropdown - Hover + Click */}
+                  <div className="absolute right-0 mt-3 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                    {/* Header */}
+                    <div className="p-5 bg-gradient-to-r from-red-50 to-pink-50 border-b">
+                      <p className="font-bold text-gray-900 text-lg">
+                        Hello, {currentUser.displayName || "Seller"}!
                       </p>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-600 mt-1">
                         {currentUser.email}
                       </p>
                     </div>
-                    <Link
-                      href="/dashboard"
-                      className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50"
-                    >
-                      <User className="w-5 h-5" /> My Dashboard
-                    </Link>
-                    <Link
-                      href="/dashboard/add-product"
-                      className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50"
-                    >
-                      <PlusCircle className="w-5 h-5" /> Add Product
-                    </Link>
-                    <Link
-                      href="/dashboard/manage-products"
-                      className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50"
-                    >
-                      <Package className="w-5 h-5" /> Manage Products
-                    </Link>
-                    <div className="border-t mt-2 pt-2">
+
+                    {/* Menu Items */}
+                    <div className="py-2">
+                      <Link
+                        href="/dashboard"
+                        className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 transition"
+                      >
+                        <User className="w-5 h-5 text-red-600" />
+                        <span className="font-medium">My Dashboard</span>
+                      </Link>
+                      <Link
+                        href="/dashboard/add-product"
+                        className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 transition"
+                      >
+                        <PlusCircle className="w-5 h-5 text-red-600" />
+                        <span className="font-medium">Add New Product</span>
+                      </Link>
+                      <Link
+                        href="/dashboard/manage-products"
+                        className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 transition"
+                      >
+                        <Package className="w-5 h-5 text-red-600" />
+                        <span className="font-medium">Manage Products</span>
+                      </Link>
+                      
+                      <Link
+                        href="/dashboard/wishlist"
+                        className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 transition"
+                      >
+                        <Heart className="w-5 h-5 text-red-600" />
+                        <span className="font-medium">Wishlist</span>
+                      </Link>
+                      <Link
+                        href="/dashboard/settings"
+                        className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 transition"
+                      >
+                        <Settings className="w-5 h-5 text-red-600" />
+                        <span className="font-medium">Account Settings</span>
+                      </Link>
+                    </div>
+
+                    {/* Sign Out */}
+                    <div className="border-t pt-2 mt-2">
                       <button
                         onClick={logout}
-                        className="w-full flex items-center gap-3 px-5 py-3 hover:bg-red-50 text-red-600 font-medium"
+                        className="w-full flex items-center gap-4 px-5 py-4 hover:bg-red-50 text-red-600 font-semibold transition"
                       >
-                        <LogOut className="w-5 h-5" /> Sign Out
+                        <LogOut className="w-5 h-5" />
+                        Sign Out
                       </button>
                     </div>
                   </div>
@@ -142,7 +177,7 @@ export default function Navbar() {
               ) : (
                 <button
                   onClick={handleLoginClick}
-                  className="px-6 py-3 bg-gradient-to-r from-red-600 to-pink-600 text-white font-bold rounded-full hover:shadow-xl hover:shadow-red-600/30 transition active:scale-95"
+                  className="px-8 py-3.5 bg-gradient-to-r from-red-600 to-pink-600 text-white font-bold rounded-full hover:shadow-2xl hover:shadow-red-600/40 transition-all active:scale-95 text-lg"
                 >
                   Login
                 </button>
@@ -241,6 +276,7 @@ export default function Navbar() {
                         </p>
                       </div>
                     </div>
+
                     <Link
                       href="/dashboard/add-product"
                       onClick={() => setIsOpen(false)}
@@ -249,6 +285,7 @@ export default function Navbar() {
                       <PlusCircle className="w-5 h-5 text-red-600" /> Add
                       Product
                     </Link>
+
                     <Link
                       href="/dashboard/manage-products"
                       onClick={() => setIsOpen(false)}
@@ -257,6 +294,7 @@ export default function Navbar() {
                       <Package className="w-5 h-5 text-red-600" /> Manage
                       Products
                     </Link>
+
                     <button
                       onClick={logout}
                       className="w-full flex items-center gap-3 py-3 px-4 hover:bg-red-50 text-red-600 font-medium rounded-xl"
@@ -275,6 +313,7 @@ export default function Navbar() {
                     >
                       Login
                     </button>
+
                     <Link
                       href="/register"
                       onClick={() => setIsOpen(false)}

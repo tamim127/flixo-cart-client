@@ -9,9 +9,8 @@ import {
   ArrowLeft,
   PlusCircle,
   Edit,
-  Upload,
-  X,
   Package,
+  X,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "@/Context/AuthContext";
@@ -40,7 +39,7 @@ const InputField = ({
   type = "text",
 }) => (
   <div className="flex flex-col">
-    <label className="font-semibold text-gray-700 mb-2">
+    <label className="font-semibold text-gray-700 mb-1 sm:mb-2 text-sm sm:text-base">
       {label} {required && <span className="text-red-600">*</span>}
     </label>
     <input
@@ -49,7 +48,7 @@ const InputField = ({
       value={value}
       onChange={onChange}
       required={required}
-      className="rounded-xl border border-gray-300 px-5 py-3 focus:outline-none focus:ring-2 focus:ring-red-400 text-lg shadow-sm"
+      className="rounded-xl border border-gray-300 px-4 py-2 sm:px-5 sm:py-3 focus:outline-none focus:ring-2 focus:ring-red-400 text-sm sm:text-lg shadow-sm"
     />
   </div>
 );
@@ -107,14 +106,12 @@ const ProductForm = ({ productId = null }) => {
     if (currentUser?.uid) fetchProduct();
   }, [fetchProduct, currentUser?.uid]);
 
-  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (name === "thumbnail") setImagePreview(value.trim());
   };
 
-  // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!currentUser?.uid) return;
@@ -166,26 +163,28 @@ const ProductForm = ({ productId = null }) => {
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-pink-50">
-        <Loader2 className="w-20 h-20 animate-spin text-red-600" />
+        <Loader2 className="w-16 h-16 sm:w-20 sm:h-20 animate-spin text-red-600" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pink-50 py-12 px-4">
-      <div className="max-w-5xl mx-auto">
-        <div className="mb-10">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pink-50 py-8 sm:py-12 px-3 sm:px-6">
+      <div className="max-w-4xl sm:max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="mb-8 sm:mb-10">
           <Link
             href="/dashboard/manage-products"
-            className="inline-flex items-center text-red-600 hover:text-red-700 font-bold text-lg mb-6 hover:underline"
+            className="inline-flex items-center text-red-600 hover:text-red-700 font-semibold text-sm sm:text-lg mb-4 sm:mb-6 hover:underline"
           >
-            <ArrowLeft className="w-6 h-6 mr-2" /> Back to Products
+            <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 mr-2" /> Back to
+            Products
           </Link>
-          <h1 className="text-5xl md:text-6xl font-black text-gray-900 flex items-center gap-5">
+          <h1 className="text-3xl sm:text-5xl font-black text-gray-900 flex items-center gap-3 sm:gap-5">
             {isEditing ? (
-              <Edit className="w-14 h-14 text-purple-600" />
+              <Edit className="w-10 h-10 sm:w-14 sm:h-14 text-purple-600" />
             ) : (
-              <PlusCircle className="w-14 h-14 text-red-600" />
+              <PlusCircle className="w-10 h-10 sm:w-14 sm:h-14 text-red-600" />
             )}
             {isEditing ? "Edit Product" : "Add New Product"}
           </h1>
@@ -197,11 +196,11 @@ const ProductForm = ({ productId = null }) => {
         >
           {/* Image Preview */}
           {imagePreview && (
-            <div className="relative">
+            <div className="relative w-full h-64 sm:h-96">
               <img
                 src={imagePreview}
                 alt="Product Preview"
-                className="w-full h-96 object-cover"
+                className="w-full h-full object-cover"
                 onError={() => setImagePreview("")}
               />
               <button
@@ -210,21 +209,21 @@ const ProductForm = ({ productId = null }) => {
                   setImagePreview("");
                   setFormData((prev) => ({ ...prev, thumbnail: "" }));
                 }}
-                className="absolute top-6 right-6 bg-red-600 text-white p-4 rounded-full hover:bg-red-700 shadow-2xl transition"
+                className="absolute top-3 sm:top-6 right-3 sm:right-6 bg-red-600 text-white p-2 sm:p-4 rounded-full hover:bg-red-700 shadow-lg transition"
               >
-                <X className="w-7 h-7" />
+                <X className="w-4 h-4 sm:w-7 sm:h-7" />
               </button>
             </div>
           )}
 
-          <div className="p-8 lg:p-14 space-y-12">
+          <div className="p-6 sm:p-14 space-y-8 sm:space-y-12">
             {/* Product Info */}
             <section>
-              <h2 className="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-4">
-                <Package className="w-10 h-10 text-red-600" /> Product
-                Information
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-8 flex items-center gap-2 sm:gap-4">
+                <Package className="w-6 h-6 sm:w-10 sm:h-10 text-red-600" />{" "}
+                Product Information
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
                 <InputField
                   label="Product Title *"
                   name="title"
@@ -286,15 +285,15 @@ const ProductForm = ({ productId = null }) => {
 
             {/* Description */}
             <section>
-              <label className="font-semibold text-gray-700 mb-2 block">
+              <label className="font-semibold text-gray-700 mb-1 sm:mb-2 block text-sm sm:text-base">
                 Description
               </label>
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                rows={6}
-                className="w-full rounded-xl border border-gray-300 px-5 py-3 focus:outline-none focus:ring-2 focus:ring-red-400 text-lg shadow-sm"
+                rows={4}
+                className="w-full rounded-xl border border-gray-300 px-4 py-2 sm:px-5 sm:py-3 focus:outline-none focus:ring-2 focus:ring-red-400 text-sm sm:text-lg shadow-sm"
               />
             </section>
 
@@ -303,12 +302,12 @@ const ProductForm = ({ productId = null }) => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-red-600 hover:bg-red-700 text-white px-10 py-5 rounded-2xl text-xl font-bold shadow-xl flex items-center gap-3 disabled:opacity-70"
+                className="bg-red-600 hover:bg-red-700 text-white px-6 sm:px-10 py-3 sm:py-5 rounded-2xl text-sm sm:text-xl font-bold shadow-md sm:shadow-xl flex items-center gap-2 sm:gap-3 disabled:opacity-70"
               >
                 {isSubmitting ? (
-                  <Loader2 className="w-6 h-6 animate-spin" />
+                  <Loader2 className="w-4 sm:w-6 h-4 sm:h-6 animate-spin" />
                 ) : (
-                  <Save className="w-6 h-6" />
+                  <Save className="w-4 sm:w-6 h-4 sm:h-6" />
                 )}
                 {isEditing ? "Update Product" : "Add Product"}
               </button>
